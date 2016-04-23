@@ -1,6 +1,6 @@
 {
   "name": "@kennship/http-echo",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "JSON service for debugging a web setup",
   "main": "index.js",
   "scripts": {
