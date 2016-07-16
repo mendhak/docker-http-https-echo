@@ -1,7 +1,6 @@
 var express = require('express')
 var app = express()
 const os = require('os')
-const dns = require('dns');
 
 app.set('json spaces', 2);
 
@@ -21,8 +20,7 @@ app.all('*', (req, res) => {
     subdomains: req.subdomains,
     xhr: req.xhr,
     os: {
-      hostname: os.hostname(),
-      dns: dns.getServers()
+      hostname: os.hostname()
     }
   })
 })
