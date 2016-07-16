@@ -1,5 +1,6 @@
 var express = require('express')
 var app = express()
+var os = require('os')
 
 app.set('json spaces', 2);
 
@@ -18,6 +19,9 @@ app.all('*', (req, res) => {
     query: req.query,
     subdomains: req.subdomains,
     xhr: req.xhr,
+    os: {
+      hostname: os.hostname()
+    }
   })
 })
 
