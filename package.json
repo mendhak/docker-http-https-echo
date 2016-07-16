@@ -1,5 +1,5 @@
 {
-  "name": "@kennship/http-echo",
+  "name": "@solsson/http-echo",
   "version": "1.0.1",
   "description": "JSON service for debugging a web setup",
   "main": "index.js",
@@ -10,9 +10,9 @@
   "author": "Ryan Muller <ryan@kennship.com>",
   "license": "BSD-3-Clause",
   "engines": {
-    "node": ">=4.4.1"
+    "node": ">=6.3.0"
   },
   "dependencies": {
-    "express": "^4.13.4"
+    "express": "4.14.0"
   }
 }
