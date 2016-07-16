@@ -1,6 +1,8 @@
 var express = require('express')
 var app = express()
 
+app.set('json spaces', 2);
+
 app.all('*', (req, res) => {
   res.json({
     path: req.path,
