@@ -1,8 +1,11 @@
 var express = require('express')
+const morgan = require('morgan');
 var app = express()
 const os = require('os')
 
 app.set('json spaces', 2);
+
+app.use(morgan('combined'));
 
 app.all('*', (req, res) => {
   res.json({
