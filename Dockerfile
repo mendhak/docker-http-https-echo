@@ -1,4 +1,4 @@
-FROM solsson/node:8
+FROM yolean/node
 COPY . /app
 WORKDIR /app
 RUN npm install
