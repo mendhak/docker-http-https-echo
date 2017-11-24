@@ -37,6 +37,24 @@ app.all('*', (req, res) => {
     }
   }
   res.json(echo);
-})
+});
 
-app.listen(process.env.PORT || 80)
+const server = app.listen(process.env.PORT || 80);
+let calledClose = false;
+
+process.on('exit', function () {
+  if (calledClose) return;
+  console.log('Got exit event. Trying to stop Express server.');
+  server.close(function() {
+    console.log("Express server closed");
+  });
+});
+
+process.on('SIGINT', function() {
+  console.log('Got SIGINT. Trying to exit gracefully.');
+  calledClose = true;
+  server.close(function() {
+    console.log("Exoress server closed. Asking process to exit.");
+    process.exit()
+  });
+});
