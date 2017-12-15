@@ -1,6 +1,6 @@
 Docker image which echoes various HTTP request properties back to client, as well as in docker logs. 
 
-![browser](screenshots/screenshot.png)
+![browser](https://raw.githubusercontent.com/mendhak/docker-http-https-echo/master/screenshots/screenshot.png)
 
 ## Usage
 
@@ -31,11 +31,11 @@ You can substitute the certificate and private key with your own. This example u
 
 #### Curl output
 
-![curl](screenshots/screenshot2.png)
+![curl](https://raw.githubusercontent.com/mendhak/docker-http-https-echo/master/screenshots/screenshot2.png)
 
 #### `docker logs` output
 
-![dockerlogs](screenshots/screenshot3.png)
+![dockerlogs](https://raw.githubusercontent.com/mendhak/docker-http-https-echo/master/screenshots/screenshot3.png)
 
 
 
