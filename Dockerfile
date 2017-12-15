@@ -4,6 +4,8 @@ WORKDIR /app
 
 COPY . .
 
+RUN rm -rf screenshots/
+
 RUN npm install --production
 
 RUN apk --no-cache add openssl
