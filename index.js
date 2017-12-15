@@ -3,10 +3,18 @@ const morgan = require('morgan');
 var app = express()
 const os = require('os');
 const jwt = require('jsonwebtoken');
+var concat = require('concat-stream');
 
 app.set('json spaces', 2);
 
 app.use(morgan('combined'));
+
+app.use(function(req, res, next){
+  req.pipe(concat(function(data){
+    req.body = data.toString('utf8');
+    next();
+  }));
+});
 
 app.all('*', (req, res) => {
   const echo = {
