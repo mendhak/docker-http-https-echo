@@ -1,5 +1,9 @@
 {
-  "name": "@solsson/http-echo",
+  "name": "@mendhak/http-echo",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mendhak/docker-http-echo"
+  },
   "version": "1.0.1",
   "description": "JSON service for debugging a web setup",
   "main": "index.js",
@@ -7,7 +11,7 @@
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Ryan Muller <ryan@kennship.com>",
+  "author": "Mendhak <gpslogger@mendhak.com>",
   "license": "BSD-3-Clause",
   "engines": {
     "node": ">=6.3.0"

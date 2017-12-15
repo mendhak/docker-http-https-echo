@@ -1,11 +1,17 @@
-FROM yolean/node@sha256:230b269710a1d09b9ebbdeeea0fc4e69ac1388ab71b0178452e817065f69c700
+FROM node:9.2-alpine
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+COPY . .
+
 RUN npm install --production
 
-COPY . .
+RUN apk --no-cache add openssl
+
+RUN sh generate-cert.sh
+
+EXPOSE 80 443
+
 
 ENTRYPOINT ["node", "./index.js"]
 CMD []
