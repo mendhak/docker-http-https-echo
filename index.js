@@ -35,6 +35,9 @@ app.all('*', (req, res) => {
     xhr: req.xhr,
     os: {
       hostname: os.hostname()
+    },
+    connection: {
+      servername: req.connection.servername
     }
   };
   if (process.env.JWT_HEADER) {
