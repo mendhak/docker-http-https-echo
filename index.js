@@ -59,8 +59,8 @@ const sslOpts = {
   cert: require('fs').readFileSync('fullchain.pem'),
 };
 
-http.createServer(app).listen(80);
-https.createServer(sslOpts,app).listen(443);
+var httpServer = http.createServer(app).listen(80);
+var httpsServer = https.createServer(sslOpts,app).listen(443);
 
 let calledClose = false;
 
@@ -75,8 +75,11 @@ process.on('exit', function () {
 process.on('SIGINT', function() {
   console.log('Got SIGINT. Trying to exit gracefully.');
   calledClose = true;
-  server.close(function() {
-    console.log("Exoress server closed. Asking process to exit.");
-    process.exit()
+  httpServer.close(function() {
+    httpsServer.close(function() {
+      console.log("HTTP and HTTPS servers closed. Asking process to exit.");
+      process.exit()
+    });
+    
   });
 });
