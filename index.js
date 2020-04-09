@@ -59,8 +59,8 @@ const sslOpts = {
   cert: require('fs').readFileSync('fullchain.pem'),
 };
 
-var httpServer = http.createServer(app).listen(80);
-var httpsServer = https.createServer(sslOpts,app).listen(443);
+var httpServer = http.createServer(app).listen(process.env.HTTP_PORT || 80);
+var httpsServer = https.createServer(sslOpts,app).listen(process.env.HTTPS_PORT || 443);
 
 let calledClose = false;
 
