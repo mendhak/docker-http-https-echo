@@ -26,6 +26,27 @@ You can substitute the certificate and private key with your own. This example u
             - /etc/ssl/private/ssl-cert-snakeoil.key:/app/privkey.pem
 
 
+## Choose your ports
+
+You can choose a different internal port instead of 80 and 443 with the `HTTP_PORT` and `HTTPS_PORT` environment variables. 
+
+In this example I'm setting http to listen on 8888, and https to listen on 9999.  
+
+     docker run -e HTTP_PORT=8888 -e HTTPS_PORT=9999 -p 8080:8888 -p 8443:9999 --rm -t mendhak/http-https-echo
+
+
+With docker compose, this would be
+
+    my-http-listener:
+        image: mendhak/http-https-echo
+        environment: 
+            - HTTP_PORT=8888
+            - HTTPS_PORT=9999
+        ports:
+            - "8080:8888"
+            - "8443:9999"
+
+
 
 ## Output
 
