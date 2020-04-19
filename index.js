@@ -72,8 +72,11 @@ process.on('exit', function () {
   });
 });
 
-process.on('SIGINT', function() {
-  console.log('Got SIGINT. Trying to exit gracefully.');
+process.on('SIGINT', shutDown);
+process.on('SIGTERM', shutDown);
+
+function shutDown(){
+  console.log('Got a kill signal. Trying to exit gracefully.');
   calledClose = true;
   httpServer.close(function() {
     httpsServer.close(function() {
@@ -82,4 +85,4 @@ process.on('SIGINT', function() {
     });
     
   });
-});
+}
