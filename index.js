@@ -8,6 +8,7 @@ const jwt = require('jsonwebtoken');
 var concat = require('concat-stream');
 
 app.set('json spaces', 2);
+app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
 
 app.use(morgan('combined'));
 
