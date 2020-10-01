@@ -51,8 +51,10 @@ app.all('*', (req, res) => {
     }
   }
   res.json(echo);
-  console.log('-----------------')
-  console.log(echo);
+  if (process.env.LOG_IGNORE_PATH != req.path) {
+    console.log('-----------------')
+    console.log(echo);
+  }
 });
 
 const sslOpts = {
