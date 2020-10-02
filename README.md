@@ -4,15 +4,20 @@ Docker image which echoes various HTTP request properties back to client, as wel
 
 ## Usage
 
+Run with Docker
+
     docker run -p 8080:80 -p 8443:443 --rm -t mendhak/http-https-echo
 
-Then issue a request via your browser or curl -
+Or run with Docker Compose
+
+    docker-compose up
+
+Then, issue a request via your browser or curl, and watch the response, as well as container log output.
 
     curl -k -X PUT -H "Arbitrary:Header" -d aaa=bbb https://localhost:8443/hello-world
 
 
-
-## Docker Compose
+## Use your own certificates
 
 You can substitute the certificate and private key with your own. This example uses the snakeoil cert.
 
