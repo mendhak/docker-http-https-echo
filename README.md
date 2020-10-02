@@ -35,7 +35,7 @@ In this example I'm setting http to listen on 8888, and https to listen on 9999.
      docker run -e HTTP_PORT=8888 -e HTTPS_PORT=9999 -p 8080:8888 -p 8443:9999 --rm -t mendhak/http-https-echo
 
 
-With docker compose, this would be
+With docker compose, this would be:
 
     my-http-listener:
         image: mendhak/http-https-echo
@@ -52,6 +52,17 @@ Set the environment variable `LOG_IGNORE_PATH` to a path you would like to exclu
 Useful to remove verbose logging of health checks when deployed to Kubernetes.
 
      docker run -e LOG_IGNORE_PATH=/ping -e HTTP_PORT=8888 -e HTTPS_PORT=9999 -p 8080:8888 -p 8443:9999 --rm -t mendhak/http-https-echo
+
+
+With docker compose, this would be:
+
+    my-http-listener:
+        image: mendhak/http-https-echo
+        environment:
+            - LOG_IGNORE_PATH=/ping
+        ports:
+            - "8080:80"
+            - "8443:443"
 
 
 ## Output
