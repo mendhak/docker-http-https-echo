@@ -10,5 +10,4 @@ RUN npm install --production
 
 RUN apk --no-cache add openssl && sh generate-cert.sh && rm -rf /var/cache/apk/*
 
-ENTRYPOINT ["node", "./index.js"]
-CMD []
+CMD ["node", "./index.js"]
