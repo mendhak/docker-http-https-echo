@@ -42,10 +42,11 @@ app.all('*', (req, res) => {
     }
   };
   if (process.env.JWT_HEADER) {
-    const token = req.headers[process.env.JWT_HEADER.toLowerCase()];
+    let token = req.headers[process.env.JWT_HEADER.toLowerCase()];
     if (!token) {
       echo.jwt = token;
     } else {
+      token = token.split(" ").pop();
       const decoded = jwt.decode(token, {complete: true});
       echo.jwt = decoded;
     }

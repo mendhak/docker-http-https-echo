@@ -1,8 +1,9 @@
-Docker image which echoes various HTTP request properties back to client, as well as in docker logs. 
+Docker image which echoes various HTTP request properties back to client, as well as in the Docker container logs.  
+You can use your own certificates, choose your ports, decode JWT headers and filter out certain paths
 
 ![browser](https://raw.githubusercontent.com/mendhak/docker-http-https-echo/master/screenshots/screenshot.png)
 
-## Usage
+## Basic Usage
 
 Run with Docker
 
@@ -15,20 +16,6 @@ Or run with Docker Compose
 Then, issue a request via your browser or curl, and watch the response, as well as container log output.
 
     curl -k -X PUT -H "Arbitrary:Header" -d aaa=bbb https://localhost:8443/hello-world
-
-
-## Use your own certificates
-
-You can substitute the certificate and private key with your own. This example uses the snakeoil cert.
-
-    my-http-listener:
-        image: mendhak/http-https-echo
-        ports:
-            - "8080:80"
-            - "8443:443"
-        volumes:
-            - /etc/ssl/certs/ssl-cert-snakeoil.pem:/app/fullchain.pem
-            - /etc/ssl/private/ssl-cert-snakeoil.key:/app/privkey.pem
 
 
 ## Choose your ports
@@ -50,6 +37,35 @@ With docker compose, this would be:
         ports:
             - "8080:8888"
             - "8443:9999"
+
+
+## Use your own certificates
+
+Use volume mounting to substitute the certificate and private key with your own. This example uses the snakeoil cert.
+
+    my-http-listener:
+        image: mendhak/http-https-echo
+        ports:
+            - "8080:80"
+            - "8443:443"
+        volumes:
+            - /etc/ssl/certs/ssl-cert-snakeoil.pem:/app/fullchain.pem
+            - /etc/ssl/private/ssl-cert-snakeoil.key:/app/privkey.pem
+
+
+
+## Decode JWT header
+
+If you specify the header that contains the JWT, the echo output will contain the decoded JWT.  Use the `JWT_HEADER` environment variable for this. 
+
+    docker run -e JWT_HEADER=Authentication -p 8080:80 -p 8443:443 --rm -it mendhak/http-https-echo
+
+
+Now make your request with `Authentication: eyJ...` header (it should also work with the `Authentication: Bearer eyJ...` schema too):
+
+     curl -k -H "Authentication: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c" http://localhost:8080/
+
+And in the output you should see a `jwt` section. 
 
 ## Do not log specific path
 
