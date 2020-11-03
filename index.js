@@ -41,6 +41,11 @@ app.all('*', (req, res) => {
       servername: req.connection.servername
     }
   };
+
+  if(req.is('application/json')){
+    echo.json = JSON.parse(req.body)
+  }
+
   if (process.env.JWT_HEADER) {
     let token = req.headers[process.env.JWT_HEADER.toLowerCase()];
     if (!token) {
@@ -54,7 +59,7 @@ app.all('*', (req, res) => {
   res.json(echo);
   if (process.env.LOG_IGNORE_PATH != req.path) {
     console.log('-----------------')
-    console.log(echo);
+    console.log(JSON.stringify(echo, null, 4));
   }
 });
 
