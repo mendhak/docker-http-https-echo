@@ -86,6 +86,27 @@ With docker compose, this would be:
             - "8443:443"
 
 
+## JSON payloads and JSON output
+
+If you submit a JSON payload in the body of the request, with Content-Type: application/json, then the response will contain the escaped JSON as well.  
+
+For example,
+
+    curl -X POST -H "Content-Type: application/json" -d '{"a":"b"}' http://localhost:8080/
+
+Will contain a `json` property in the response/output. 
+
+        ...
+        "xhr": false,
+        "connection": {},
+        "json": {
+            "a": "b"
+        }
+    }
+
+
+
+
 ## Output
 
 #### Curl output
