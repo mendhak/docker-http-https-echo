@@ -59,7 +59,13 @@ app.all('*', (req, res) => {
   res.json(echo);
   if (process.env.LOG_IGNORE_PATH != req.path) {
     console.log('-----------------')
-    console.log(JSON.stringify(echo, null, 4));
+    
+    let spacer = 4;
+    if(process.env.LOG_WITHOUT_NEWLINE){
+      spacer = null;
+    }
+    
+    console.log(JSON.stringify(echo, null, spacer));
   }
 });
 
