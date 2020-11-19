@@ -10,22 +10,6 @@ function message {
 RESTORE=$(echo -en '\033[0m')
 RED=$(echo -en '\033[01;31m')
 GREEN=$(echo -en '\033[01;32m')
-YELLOW=$(echo -en '\033[00;33m')
-BLUE=$(echo -en '\033[00;34m')
-MAGENTA=$(echo -en '\033[00;35m')
-PURPLE=$(echo -en '\033[00;35m')
-CYAN=$(echo -en '\033[00;36m')
-LIGHTGRAY=$(echo -en '\033[00;37m')
-LRED=$(echo -en '\033[01;31m')
-LGREEN=$(echo -en '\033[01;32m')
-LYELLOW=$(echo -en '\033[01;33m')
-LBLUE=$(echo -en '\033[01;34m')
-LMAGENTA=$(echo -en '\033[01;35m')
-LPURPLE=$(echo -en '\033[01;35m')
-LCYAN=$(echo -en '\033[01;36m')
-WHITE=$(echo -en '\033[01;37m')
-
-
 
 function failed {
     echo ${RED}✗$1${RESTORE}
@@ -150,7 +134,24 @@ message " Stop containers "
 docker stop http-echo-tests 
 
 
+message " Start container with LOG_IGNORE_PATH "
+docker run -d --rm -e LOG_IGNORE_PATH=/ping --name http-echo-tests -p 8080:80 -p 8443:443 -t mendhak/http-https-echo
+sleep 5
+curl -s -k -X POST -d "banana" https://localhost:8443/ping > /dev/null
 
+if [ $(docker logs http-echo-tests | wc -l) == 1 ] && \
+   ! [ $(docker logs http-echo-tests | grep banana) ]
+then
+    passed "LOG_IGNORE_PATH ignored"
+else
+    failed "LOG_IGNORE_PATH was not ignored"
+    docker logs http-echo-tests 
+    exit 1
+fi
+
+
+message " Stop containers "
+docker stop http-echo-tests 
 
 
 popd

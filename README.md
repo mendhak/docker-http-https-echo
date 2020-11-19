@@ -74,7 +74,7 @@ And in the output you should see a `jwt` section.
 Set the environment variable `LOG_IGNORE_PATH` to a path you would like to exclude from verbose logging to stdout. 
 This can help reduce noise from healthchecks in orchestration/infrastructure like Swarm, Kubernetes, ALBs, etc. 
 
-     docker run -e LOG_IGNORE_PATH=/ping -e HTTP_PORT=8888 -e HTTPS_PORT=9999 -p 8080:8888 -p 8443:9999 --rm -t mendhak/http-https-echo
+     docker run -e LOG_IGNORE_PATH=/ping -p 8080:80 -p 8443:443 --rm -t mendhak/http-https-echo
 
 
 With docker compose, this would be:
@@ -125,4 +125,6 @@ Will contain a `json` property in the response/output.
 
     docker build -t mendhak/http-https-echo .
 
+Run some tests to make sure features are working as expected. 
 
+    ./tests.sh
