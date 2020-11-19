@@ -17,9 +17,9 @@
     "node": ">=6.3.0"
   },
   "dependencies": {
-    "concat-stream": "1.6.0",
-    "express": "4.16.2",
-    "jsonwebtoken": "8.1.0",
+    "concat-stream": "^2.0.0",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.0",
     "morgan": "^1.10.0"
   }
 }
