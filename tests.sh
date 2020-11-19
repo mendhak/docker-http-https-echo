@@ -142,9 +142,9 @@ curl -s -k -X POST -d "banana" https://localhost:8443/ping > /dev/null
 if [ $(docker logs http-echo-tests | wc -l) == 1 ] && \
    ! [ $(docker logs http-echo-tests | grep banana) ]
 then
-    passed "LOG_IGNORE_PATH ignored"
+    passed "LOG_IGNORE_PATH ignored the /ping path"
 else
-    failed "LOG_IGNORE_PATH was not ignored"
+    failed "LOG_IGNORE_PATH failed"
     docker logs http-echo-tests 
     exit 1
 fi
@@ -152,6 +152,26 @@ fi
 
 message " Stop containers "
 docker stop http-echo-tests 
+
+message " Start container with LOG_WITHOUT_NEWLINE "
+docker run -d --rm -e LOG_WITHOUT_NEWLINE=1 --name http-echo-tests -p 8080:80 -p 8443:443 -t mendhak/http-https-echo
+sleep 5
+curl -s -k -X POST -d "tiramisu" https://localhost:8443/ > /dev/null
+
+if [ $(docker logs http-echo-tests | wc -l) == 3 ] && \
+   [ $(docker logs http-echo-tests | grep tiramisu) ]
+then
+    passed "LOG_WITHOUT_NEWLINE logged output in single line"
+else
+    failed "LOG_WITHOUT_NEWLINE failed"
+    docker logs http-echo-tests 
+    exit 1
+fi
+
+
+message " Stop containers "
+docker stop http-echo-tests 
+
 
 
 popd
