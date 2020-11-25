@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 function message {
     echo ""
     echo "---------------------------------------------------------------"
@@ -34,11 +36,9 @@ pushd testarea
 message " Cleaning up from previous test run "
 docker ps -q --filter "name=http-echo-tests" | grep -q . && docker stop http-echo-tests
 
-message " Start container "
+message " Start container normally "
 docker run -d --rm --name http-echo-tests -p 8080:80 -p 8443:443 -t mendhak/http-https-echo
 sleep 5
-
-
 
 
 message " Make http(s) request, and test the path, method and header. "
@@ -172,7 +172,34 @@ fi
 message " Stop containers "
 docker stop http-echo-tests 
 
+message " Check that container can run as a NON ROOT USER "
+docker run -d --name http-echo-tests --user node -e HTTP_PORT=8888 -e HTTPS_PORT=9999 -p 8080:8888 -p 8443:9999 --rm mendhak/http-https-echo
 
+WHOAMI=$(docker exec http-echo-tests whoami)
+
+if [ "$WHOAMI" == "node" ]
+then
+    passed "Running as non root user"
+else
+    failed "Running as root user"    
+    exit 1
+fi
+
+message " Make http(s) request, and test the path, method and header. "
+REQUEST=$(curl -s -k -X PUT -H "Arbitrary:Header" -d aaa=bbb https://localhost:8443/hello-world)
+if [ $(echo $REQUEST | jq -r '.path') == '/hello-world' ] && \
+   [ $(echo $REQUEST | jq -r '.method') == 'PUT' ] && \
+   [ $(echo $REQUEST | jq -r '.headers.arbitrary') == 'Header' ] 
+then
+    passed "HTTPS request passed."
+else
+    failed "HTTPS request failed."
+    echo $REQUEST | jq
+    exit 1
+fi
+
+message " Stop containers "
+docker stop http-echo-tests 
 
 popd
 rm -rf testarea

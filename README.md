@@ -106,8 +106,15 @@ Will contain a `json` property in the response/output.
         }
     }
 
+## Run as a non-root or rootless user
 
+Set the `--user` to `node`, and change the internal ports to a high number. 
 
+    docker run --user node -e HTTP_PORT=8080 -e HTTPS_PORT=8443 -p 8080:8080 -p 8443:8443 --rm mendhak/http-https-echo
+
+Or use the sysctl flag, like so
+
+    docker run --user node --sysctl net.ipv4.ip_unprivileged_port_start=0 -p 8080:80 -p 8443:443 --rm mendhak/http-https-echo
 
 ## Output
 
