@@ -1,4 +1,8 @@
-[![pulls](https://img.shields.io/docker/pulls/mendhak/http-https-echo.svg?style=for-the-badge&logo=docker)](https://hub.docker.com/r/mendhak/http-https-echo) [![Docker Build Status](https://img.shields.io/docker/build/mendhak/http-https-echo?color=darkgreen&label=build&style=for-the-badge)](https://hub.docker.com/r/mendhak/http-https-echo)
+[![pulls](https://img.shields.io/docker/pulls/mendhak/http-https-echo.svg?style=for-the-badge&logo=docker)](https://hub.docker.com/r/mendhak/http-https-echo) 
+[![Docker Build Status](https://img.shields.io/docker/build/mendhak/http-https-echo?color=darkgreen&label=build&style=for-the-badge)
+![Docker Image Version (latest semver)](https://img.shields.io/docker/v/mendhak/http-https-echo?color=lightblue&label=latest&sort=semver&style=for-the-badge)](https://hub.docker.com/r/mendhak/http-https-echo)
+
+
 
 [`mendhak/http-https-echo`](https://hub.docker.com/r/mendhak/http-https-echo) is a Docker image that can echo various HTTP request properties back to client, as well as in the Docker container logs.  
 You can use your own certificates, choose your ports, decode JWT headers and filter out certain paths. 
