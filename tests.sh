@@ -172,8 +172,8 @@ fi
 message " Stop containers "
 docker stop http-echo-tests 
 
-message " Check that container can run as a NON ROOT USER "
-docker run -d --name http-echo-tests --user node -e HTTP_PORT=8888 -e HTTPS_PORT=9999 -p 8080:8888 -p 8443:9999 --rm mendhak/http-https-echo
+message " Check that container is running as a NON ROOT USER by default"
+docker run -d --name http-echo-tests --rm mendhak/http-https-echo
 
 WHOAMI=$(docker exec http-echo-tests whoami)
 
@@ -182,19 +182,6 @@ then
     passed "Running as non root user"
 else
     failed "Running as root user"    
-    exit 1
-fi
-
-message " Make http(s) request, and test the path, method and header. "
-REQUEST=$(curl -s -k -X PUT -H "Arbitrary:Header" -d aaa=bbb https://localhost:8443/hello-world)
-if [ $(echo $REQUEST | jq -r '.path') == '/hello-world' ] && \
-   [ $(echo $REQUEST | jq -r '.method') == 'PUT' ] && \
-   [ $(echo $REQUEST | jq -r '.headers.arbitrary') == 'Header' ] 
-then
-    passed "HTTPS request passed."
-else
-    failed "HTTPS request failed."
-    echo $REQUEST | jq
     exit 1
 fi
 

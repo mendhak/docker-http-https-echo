@@ -1,14 +1,3 @@
-# BUILD
-# docker build \
-# --force-rm=true \
-# -f Dockerfile \
-# -t docker-http-https-echo .
-
-# RUN
-# docker run --rm -it \
-# -p 8080:8080 -p 8443:8443 \
-# docker-http-https-echo
-
 FROM node:14-alpine
 
 WORKDIR /app
