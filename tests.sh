@@ -37,7 +37,7 @@ message " Cleaning up from previous test run "
 docker ps -q --filter "name=http-echo-tests" | grep -q . && docker stop http-echo-tests
 
 message " Start container normally "
-docker run -d --rm --name http-echo-tests -p 8080:80 -p 8443:443 -t mendhak/http-https-echo
+docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
 sleep 5
 
 
@@ -115,7 +115,7 @@ docker stop http-echo-tests
 
 
 message " Start container with JWT_HEADER "
-docker run -d --rm -e JWT_HEADER=Authentication --name http-echo-tests -p 8080:80 -p 8443:443 -t mendhak/http-https-echo
+docker run -d --rm -e JWT_HEADER=Authentication --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
 sleep 5
 
 REQUEST=$(curl -s -k -H "Authentication: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c" https://localhost:8443/ )
@@ -135,7 +135,7 @@ docker stop http-echo-tests
 
 
 message " Start container with LOG_IGNORE_PATH "
-docker run -d --rm -e LOG_IGNORE_PATH=/ping --name http-echo-tests -p 8080:80 -p 8443:443 -t mendhak/http-https-echo
+docker run -d --rm -e LOG_IGNORE_PATH=/ping --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
 sleep 5
 curl -s -k -X POST -d "banana" https://localhost:8443/ping > /dev/null
 
@@ -154,7 +154,7 @@ message " Stop containers "
 docker stop http-echo-tests 
 
 message " Start container with LOG_WITHOUT_NEWLINE "
-docker run -d --rm -e LOG_WITHOUT_NEWLINE=1 --name http-echo-tests -p 8080:80 -p 8443:443 -t mendhak/http-https-echo
+docker run -d --rm -e LOG_WITHOUT_NEWLINE=1 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
 sleep 5
 curl -s -k -X POST -d "tiramisu" https://localhost:8443/ > /dev/null
 
