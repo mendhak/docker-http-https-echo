@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI
+name: Build and Test and Scan
 
 # Controls when the action will run. 
 on: [push, pull_request, workflow_dispatch]
@@ -17,8 +17,13 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
+      - name: Build and test the image
         run: ./tests.sh
+
+      - name: Scan the image
+        uses: anchore/scan-action@v2
+        with:
+          image: "mendhak/http-https-echo:latest"
+          debug: false
 
 
