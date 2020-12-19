@@ -32,6 +32,6 @@ jobs:
         uses: anchore/scan-action@v2
         with:
           image: "mendhak/http-https-echo:latest"
-          debug: false
+          debug: true
 
 
