@@ -37,7 +37,7 @@ message " Cleaning up from previous test run "
 docker ps -q --filter "name=http-echo-tests" | grep -q . && docker stop http-echo-tests
 
 message " Start container normally "
-docker run -d --rm --name http-echo-tests -p 8080:80 -p 8443:443 -t mendhak/http-https-echo
+docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
 sleep 5
 
 
