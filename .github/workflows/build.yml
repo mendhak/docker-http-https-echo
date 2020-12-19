@@ -25,14 +25,13 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      # Runs a single command using the runners shell
-      - name: Run the build and test script
+      - name: Build and test the image
         run: ./tests.sh
 
-      - name: Scan image
+      - name: Scan the image
         uses: anchore/scan-action@v2
         with:
           image: "mendhak/http-https-echo:latest"
-          debug: 'false'
+          debug: false
 
 
