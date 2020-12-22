@@ -20,7 +20,7 @@ docker run --user node --sysctl net.ipv4.ip_unprivileged_port_start=0 -p 8080:80
 
 ## Version `latest` and others
 
-Unmaintained, please don't use the `latest` tag any longer
+_Note: The `latest` tag is no longer being built, I've removed it from the automated builds. Please don't use the `latest` tag any longer._
 
 * JWT header
 * Choose your own ports
