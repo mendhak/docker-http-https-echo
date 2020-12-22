@@ -134,3 +134,13 @@ Will contain a `json` property in the response/output.
 Run some tests to make sure features are working as expected.
 
     ./tests.sh
+
+To create a new image on Docker Hub, I need to create a tag and push it. 
+
+    git tag -s 16
+    git push --tags
+
+
+## Changelog
+
+See the [changelog](CHANGELOG.md)
