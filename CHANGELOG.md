@@ -1,3 +1,6 @@
+## Version `17` - 2021-01-15
+
+* You can pass a `x-set-response-status-code` header to set the response status code
 
 ## Version `16` - 2020-12-22
 
