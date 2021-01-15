@@ -119,8 +119,8 @@ Will contain a `json` property in the response/output.
 
 Use `x-set-response-status-code` to set a custom status code. For example,
 
-bash
-```
+
+```bash
 curl -v -H "x-set-response-status-code: 401" http://localhost:8080/
 ```
 
