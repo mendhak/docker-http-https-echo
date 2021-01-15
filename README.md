@@ -115,6 +115,21 @@ Will contain a `json` property in the response/output.
         }
     }
 
+## Custom status code
+
+Use `x-set-response-status-code` to set a custom status code. For example,
+
+bash
+```
+curl -v -H "x-set-response-status-code: 401" http://localhost:8080/
+```
+
+Will cause the reponse status code to be:
+
+```
+ HTTP/1.1 401 Unauthorized
+```
+
 ## Output
 
 #### Curl output
@@ -135,7 +150,7 @@ Run some tests to make sure features are working as expected.
 
     ./tests.sh
 
-To create a new image on Docker Hub, I need to create a tag and push it. 
+To create a new image on Docker Hub, I need to create a tag and push it.
 
     git tag -s 16
     git push --tags

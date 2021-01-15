@@ -56,15 +56,20 @@ app.all('*', (req, res) => {
       echo.jwt = decoded;
     }
   }
+  const setResponseStatusCode = parseInt(req.headers["x-set-response-status-code"], 10)
+  if (100 <= setResponseStatusCode && setResponseStatusCode < 600) {
+    res.status(setResponseStatusCode)
+  }
+
   res.json(echo);
   if (process.env.LOG_IGNORE_PATH != req.path) {
     console.log('-----------------')
-    
+
     let spacer = 4;
     if(process.env.LOG_WITHOUT_NEWLINE){
       spacer = null;
     }
-    
+
     console.log(JSON.stringify(echo, null, spacer));
   }
 });
@@ -98,6 +103,5 @@ function shutDown(){
       console.log("HTTP and HTTPS servers closed. Asking process to exit.");
       process.exit()
     });
-    
   });
 }

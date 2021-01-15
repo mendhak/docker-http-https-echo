@@ -41,11 +41,11 @@ docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/h
 sleep 5
 
 
-message " Make http(s) request, and test the path, method and header. "
+message " Make http(s) request, and test the path, method, header and status code. "
 REQUEST=$(curl -s -k -X PUT -H "Arbitrary:Header" -d aaa=bbb https://localhost:8443/hello-world)
 if [ $(echo $REQUEST | jq -r '.path') == '/hello-world' ] && \
    [ $(echo $REQUEST | jq -r '.method') == 'PUT' ] && \
-   [ $(echo $REQUEST | jq -r '.headers.arbitrary') == 'Header' ] 
+   [ $(echo $REQUEST | jq -r '.headers.arbitrary') == 'Header' ]
 then
     passed "HTTPS request passed."
 else
@@ -53,11 +53,21 @@ else
     echo $REQUEST | jq
     exit 1
 fi
+REQUEST_WITH_STATUS_CODE=$(curl -s -k -o /dev/null -w "%{http_code}" -H "x-set-response-status-code: 404" https://localhost:8443/hello-world)
+REQUEST_WITH_STATUS_CODE_V=$(curl -v -k -o /dev/null -w "%{http_code}" -H "x-set-response-status-code: 404" https://localhost:8443/hello-world)
+if [ $(echo $REQUEST_WITH_STATUS_CODE == '404') ]
+then
+    passed "HTTPS status code request passed."
+else
+    failed "HTTPS status code request failed."
+    echo $REQUEST_WITH_STATUS_CODE_V
+    exit 1
+fi
 
 REQUEST=$(curl -s -X PUT -H "Arbitrary:Header" -d aaa=bbb http://localhost:8080/hello-world)
 if [ $(echo $REQUEST | jq -r '.path') == '/hello-world' ] && \
    [ $(echo $REQUEST | jq -r '.method') == 'PUT' ] && \
-   [ $(echo $REQUEST | jq -r '.headers.arbitrary') == 'Header' ] 
+   [ $(echo $REQUEST | jq -r '.headers.arbitrary') == 'Header' ]
 then
     passed "HTTP request passed."
 else
@@ -68,7 +78,7 @@ fi
 
 message " Make JSON request, and test that json is in the output. "
 REQUEST=$(curl -s -X POST -H "Content-Type: application/json" -d '{"a":"b"}' http://localhost:8080/)
-if [ $(echo $REQUEST | jq -r '.json.a') == 'b' ] 
+if [ $(echo $REQUEST | jq -r '.json.a') == 'b' ]
 then
     passed "JSON test passed."
 else
@@ -78,7 +88,7 @@ else
 fi
 
 message " Stop containers "
-docker stop http-echo-tests 
+docker stop http-echo-tests
 
 message " Start container with different internal ports "
 docker run -d --rm -e HTTP_PORT=8888 -e HTTPS_PORT=9999 --name http-echo-tests -p 8080:8888 -p 8443:9999 -t mendhak/http-https-echo
@@ -88,7 +98,7 @@ message " Make http(s) request, and test the path, method and header. "
 REQUEST=$(curl -s -k -X PUT -H "Arbitrary:Header" -d aaa=bbb https://localhost:8443/hello-world)
 if [ $(echo $REQUEST | jq -r '.path') == '/hello-world' ] && \
    [ $(echo $REQUEST | jq -r '.method') == 'PUT' ] && \
-   [ $(echo $REQUEST | jq -r '.headers.arbitrary') == 'Header' ] 
+   [ $(echo $REQUEST | jq -r '.headers.arbitrary') == 'Header' ]
 then
     passed "HTTPS request passed."
 else
@@ -100,7 +110,7 @@ fi
 REQUEST=$(curl -s -X PUT -H "Arbitrary:Header" -d aaa=bbb http://localhost:8080/hello-world)
 if [ $(echo $REQUEST | jq -r '.path') == '/hello-world' ] && \
    [ $(echo $REQUEST | jq -r '.method') == 'PUT' ] && \
-   [ $(echo $REQUEST | jq -r '.headers.arbitrary') == 'Header' ] 
+   [ $(echo $REQUEST | jq -r '.headers.arbitrary') == 'Header' ]
 then
     passed "HTTP request passed."
 else
@@ -111,7 +121,7 @@ fi
 
 
 message " Stop containers "
-docker stop http-echo-tests 
+docker stop http-echo-tests
 
 
 message " Start container with JWT_HEADER "
@@ -121,7 +131,7 @@ sleep 5
 REQUEST=$(curl -s -k -H "Authentication: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c" https://localhost:8443/ )
 if [ $(echo $REQUEST | jq -r '.jwt.header.typ') == 'JWT' ] && \
    [ $(echo $REQUEST | jq -r '.jwt.header.alg') == 'HS256' ] && \
-   [ $(echo $REQUEST | jq -r '.jwt.payload.sub') == '1234567890' ] 
+   [ $(echo $REQUEST | jq -r '.jwt.payload.sub') == '1234567890' ]
 then
     passed "JWT request passed."
 else
@@ -131,7 +141,7 @@ else
 fi
 
 message " Stop containers "
-docker stop http-echo-tests 
+docker stop http-echo-tests
 
 
 message " Start container with LOG_IGNORE_PATH "
@@ -145,13 +155,13 @@ then
     passed "LOG_IGNORE_PATH ignored the /ping path"
 else
     failed "LOG_IGNORE_PATH failed"
-    docker logs http-echo-tests 
+    docker logs http-echo-tests
     exit 1
 fi
 
 
 message " Stop containers "
-docker stop http-echo-tests 
+docker stop http-echo-tests
 
 message " Start container with LOG_WITHOUT_NEWLINE "
 docker run -d --rm -e LOG_WITHOUT_NEWLINE=1 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
@@ -164,13 +174,13 @@ then
     passed "LOG_WITHOUT_NEWLINE logged output in single line"
 else
     failed "LOG_WITHOUT_NEWLINE failed"
-    docker logs http-echo-tests 
+    docker logs http-echo-tests
     exit 1
 fi
 
 
 message " Stop containers "
-docker stop http-echo-tests 
+docker stop http-echo-tests
 
 message " Check that container is running as a NON ROOT USER by default"
 docker run -d --name http-echo-tests --rm mendhak/http-https-echo
@@ -181,12 +191,12 @@ if [ "$WHOAMI" == "node" ]
 then
     passed "Running as non root user"
 else
-    failed "Running as root user"    
+    failed "Running as root user"
     exit 1
 fi
 
 message " Stop containers "
-docker stop http-echo-tests 
+docker stop http-echo-tests
 
 popd
 rm -rf testarea
