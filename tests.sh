@@ -73,6 +73,15 @@ else
     exit 1
 fi
 
+REQUEST_WITH_INVALID_SLEEP_MS=$(curl -o /dev/null -Ss -H "x-set-response-delay-ms: XXXX" -k https://localhost:8443/ -w '%{time_total}')
+if [[ $(echo "$REQUEST_WITH_INVALID_SLEEP_MS<2" | bc -l) == 1 ]]; then 
+    passed "Request with invalid response delay passed"
+else 
+    failed "Request with invalid response delay failed"
+    echo $REQUEST_WITH_INVALID_SLEEP_MS
+    exit 1
+fi
+
 REQUEST=$(curl -s -X PUT -H "Arbitrary:Header" -d aaa=bbb http://localhost:8080/hello-world)
 if [ $(echo $REQUEST | jq -r '.path') == '/hello-world' ] && \
    [ $(echo $REQUEST | jq -r '.method') == 'PUT' ] && \
