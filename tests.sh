@@ -64,14 +64,23 @@ else
     exit 1
 fi
 
+REQUEST_WITH_SLEEP_MS=$(curl -o /dev/null -Ss -H "x-set-response-delay-ms: 6000" -k https://localhost:8443/ -w '%{time_total}')
+if [[ $(echo "$REQUEST_WITH_SLEEP_MS>5" | bc -l) == 1 ]]; then 
+    passed "Request with response delay passed"
+else 
+    failed "Request with response delay failed"
+    echo $REQUEST_WITH_SLEEP_MS
+    exit 1
+fi
+
 REQUEST=$(curl -s -X PUT -H "Arbitrary:Header" -d aaa=bbb http://localhost:8080/hello-world)
 if [ $(echo $REQUEST | jq -r '.path') == '/hello-world' ] && \
    [ $(echo $REQUEST | jq -r '.method') == 'PUT' ] && \
    [ $(echo $REQUEST | jq -r '.headers.arbitrary') == 'Header' ]
 then
-    passed "HTTP request passed."
+    passed "HTTP request with arbitrary header passed."
 else
-    failed "HTTP request failed."
+    failed "HTTP request with arbitrary header failed."
     echo $REQUEST | jq
     exit 1
 fi

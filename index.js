@@ -6,6 +6,8 @@ var app = express()
 const os = require('os');
 const jwt = require('jsonwebtoken');
 var concat = require('concat-stream');
+const { promisify } = require('util');
+const sleep = promisify(setTimeout);
 
 app.set('json spaces', 2);
 app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
@@ -61,17 +63,24 @@ app.all('*', (req, res) => {
     res.status(setResponseStatusCode)
   }
 
-  res.json(echo);
-  if (process.env.LOG_IGNORE_PATH != req.path) {
-    console.log('-----------------')
+  const sleepTime = parseInt(req.headers["x-set-response-delay-ms"], 0)
+  sleep(sleepTime).then(() => {
+    
+    res.json(echo);
 
-    let spacer = 4;
-    if(process.env.LOG_WITHOUT_NEWLINE){
-      spacer = null;
+    if (process.env.LOG_IGNORE_PATH != req.path) {
+      console.log('-----------------')
+  
+      let spacer = 4;
+      if(process.env.LOG_WITHOUT_NEWLINE){
+        spacer = null;
+      }
+  
+      console.log(JSON.stringify(echo, null, spacer));
     }
+  });
 
-    console.log(JSON.stringify(echo, null, spacer));
-  }
+  
 });
 
 const sslOpts = {
