@@ -18,7 +18,7 @@ Please do not use the `:latest` tag as it will break without warning, use a spec
 
 Run with Docker
 
-    docker run -p 8080:8080 -p 8443:8443 --rm -t mendhak/http-https-echo:17
+    docker run -p 8080:8080 -p 8443:8443 --rm -t mendhak/http-https-echo:18
 
 Or run with Docker Compose
 
@@ -35,13 +35,13 @@ You can choose a different internal port instead of 8080 and 8443 with the `HTTP
 
 In this example I'm setting http to listen on 8888, and https to listen on 9999.
 
-     docker run -e HTTP_PORT=8888 -e HTTPS_PORT=9999 -p 8080:8888 -p 8443:9999 --rm -t mendhak/http-https-echo:17
+     docker run -e HTTP_PORT=8888 -e HTTPS_PORT=9999 -p 8080:8888 -p 8443:9999 --rm -t mendhak/http-https-echo:18
 
 
 With docker compose, this would be:
 
     my-http-listener:
-        image: mendhak/http-https-echo:17
+        image: mendhak/http-https-echo:18
         environment:
             - HTTP_PORT=8888
             - HTTPS_PORT=9999
@@ -55,7 +55,7 @@ With docker compose, this would be:
 Use volume mounting to substitute the certificate and private key with your own. This example uses the snakeoil cert.
 
     my-http-listener:
-        image: mendhak/http-https-echo:17
+        image: mendhak/http-https-echo:18
         ports:
             - "8080:8080"
             - "8443:8443"
@@ -69,7 +69,7 @@ Use volume mounting to substitute the certificate and private key with your own.
 
 If you specify the header that contains the JWT, the echo output will contain the decoded JWT.  Use the `JWT_HEADER` environment variable for this.
 
-    docker run -e JWT_HEADER=Authentication -p 8080:8080 -p 8443:8443 --rm -it mendhak/http-https-echo:17
+    docker run -e JWT_HEADER=Authentication -p 8080:8080 -p 8443:8443 --rm -it mendhak/http-https-echo:18
 
 
 Now make your request with `Authentication: eyJ...` header (it should also work with the `Authentication: Bearer eyJ...` schema too):
@@ -83,13 +83,13 @@ And in the output you should see a `jwt` section.
 Set the environment variable `LOG_IGNORE_PATH` to a path you would like to exclude from verbose logging to stdout.
 This can help reduce noise from healthchecks in orchestration/infrastructure like Swarm, Kubernetes, ALBs, etc.
 
-     docker run -e LOG_IGNORE_PATH=/ping -p 8080:8080 -p 8443:8443 --rm -t mendhak/http-https-echo:17
+     docker run -e LOG_IGNORE_PATH=/ping -p 8080:8080 -p 8443:8443 --rm -t mendhak/http-https-echo:18
 
 
 With docker compose, this would be:
 
     my-http-listener:
-        image: mendhak/http-https-echo:17
+        image: mendhak/http-https-echo:18
         environment:
             - LOG_IGNORE_PATH=/ping
         ports:
