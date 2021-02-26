@@ -130,6 +130,15 @@ Will cause the reponse status code to be:
  HTTP/1.1 401 Unauthorized
 ```
 
+## Add a delay before response
+
+Use `x-set-response-delay-ms` to set a custom delay in milliseconds.  This will allow you to simulate slow responses. 
+
+```bash
+curl -v -H "x-set-response-delay-ms: 6000" http://localhost:8080/
+```
+
+
 ## Output
 
 #### Curl output
