@@ -21,7 +21,6 @@ FROM node:14-alpine AS final
 WORKDIR /app
 COPY --from=build /app /app
 ENV HTTP_PORT=8080 HTTPS_PORT=8443
-EXPOSE $HTTP_PORT
-EXPOSE $HTTPS_PORT
+EXPOSE $HTTP_PORT $HTTPS_PORT
 USER 1000
 CMD ["node", "./index.js"]
