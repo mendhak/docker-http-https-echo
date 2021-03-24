@@ -216,5 +216,25 @@ fi
 message " Stop containers "
 docker stop http-echo-tests
 
+message " Check that container is running as user different that the user defined in image"
+IMAGE_USER="$(docker image inspect mendhak/http-https-echo -f '{{ .ContainerConfig.User }}')"
+CONTAINER_USER="$((IMAGE_USER + 1000000))"
+docker run -d --name http-echo-tests --rm -u "${CONTAINER_USER}" -p 8080:8080 mendhak/http-https-echo
+sleep 5
+curl -s http://localhost:8080 > /dev/null
+
+WHOAMI="$(docker exec http-echo-tests id -u)"
+
+if [ "$WHOAMI" == "$CONTAINER_USER" ]
+then
+    passed "Running as $CONTAINER_USER user"
+else
+    failed "Not running as $CONTAINER_USER user or failed to start"
+    exit 1
+fi
+
+message " Stop containers "
+docker stop http-echo-tests
+
 popd
 rm -rf testarea
