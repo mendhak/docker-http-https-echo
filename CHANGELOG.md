@@ -1,3 +1,7 @@
+## Version `19` - 2021-04-08
+
+* You can run the container as a different user than the one defined in the image. 
+
 ## Version `18` - 2021-02-26
 
 * You can pass a `x-set-response-delay-ms` to set a custom delay in milliseconds.
