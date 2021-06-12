@@ -17,3 +17,13 @@ jobs:
 
       - name: Build the image
         run: docker build -t mendhak/http-https-echo:latest .
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      - name: Push to Docker Hub
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: mendhak/test-image:x
