@@ -1,0 +1,17 @@
+
+name: Publish to Docker Hub
+
+on:
+  push:
+    tags:
+      - '*'
+            
+jobs:
+
+  publish:
+   runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build the image
+        run: docker build -t mendhak/http-https-echo:latest .
