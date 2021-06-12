@@ -28,5 +28,8 @@ jobs:
         run: |
           echo "The uname output was ${{ steps.runcmd.outputs.uname }}"
       - name: Build the image
-        run: docker build -t mendhak/test-image .
         uses: uraimo/run-on-arch-action@v2.0.5
+        with:
+          arch: aarch64
+          distro: ubuntu18.04
+          run: docker build -t mendhak/test-image .
