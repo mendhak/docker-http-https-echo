@@ -32,4 +32,4 @@ jobs:
         with:
           arch: aarch64
           distro: ubuntu18.04
-          run: docker build -t mendhak/test-image .
+          run: docker build -f Dockerfile.aarch64 -t mendhak/test-image .
