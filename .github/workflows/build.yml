@@ -25,5 +25,6 @@ jobs:
         with:
           image: "mendhak/http-https-echo:latest"
           debug: false
+          acs-report-enable: true
 
 
