@@ -17,8 +17,6 @@ jobs:
 
       - name: Build the image
         run: docker build -t mendhak/test-image .
-      - name: Get the tag name
-        run: echo "TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
       - name: Log in to Docker Hub
         uses: docker/login-action@v1
         with:
@@ -28,4 +26,4 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: mendhak/test-image:${{ env.TAG }}
+          tags: mendhak/test-image:$($env:GITHUB_REF -replace "refs/tags/")
