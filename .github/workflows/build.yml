@@ -21,10 +21,15 @@ jobs:
         run: ./tests.sh
 
       - name: Scan the image
+        id: scan
         uses: anchore/scan-action@v2
         with:
           image: "mendhak/http-https-echo:latest"
           debug: false
           acs-report-enable: true
+      - name: upload Anchore scan SARIF report
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: ${{ steps.scan.outputs.sarif }}
 
 
