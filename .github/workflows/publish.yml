@@ -27,4 +27,4 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: mendhak/test-image:${{ steps.get_version.outputs.VERSION }}
+          tags: mendhak/http-https-echo:${{ steps.get_version.outputs.VERSION }}
