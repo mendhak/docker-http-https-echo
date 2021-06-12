@@ -25,6 +25,8 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
+      - name: failed step
+        run: exit 9
       - name: Push to Docker Hub
         uses: docker/build-push-action@v2
         with:
