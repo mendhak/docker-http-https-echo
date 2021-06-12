@@ -18,7 +18,7 @@ jobs:
       - name: Build the image
         run: docker build -t mendhak/test-image .
       - name: Get the tag name
-        run: echo "VERSION=$(echo ${GITHUB_REF:10})" >> $GITHUB_ENV
+        run: echo "TAG=$(echo ${GITHUB_REF:10})" >> $GITHUB_ENV
       - name: Log in to Docker Hub
         uses: docker/login-action@v1
         with:
