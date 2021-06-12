@@ -25,10 +25,8 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
-      - name: echo the tag
-        run: echo ${{ steps.get_version.outputs.VERSION }}
-      # - name: Push to Docker Hub
-      #   uses: docker/build-push-action@v2
-      #   with:
-      #     push: true
-      #     tags: mendhak/test-image:${{ env.TAG }}
+      - name: Push to Docker Hub
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: mendhak/test-image:${{ steps.get_version.outputs.VERSION }}
