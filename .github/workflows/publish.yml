@@ -3,9 +3,11 @@ name: Publish to Docker Hub
 
 on:
   push:
+    branches: 
+      - '*'
     tags:
       - '*'
-            
+
 jobs:
 
   publish:
