@@ -8,9 +8,16 @@ const jwt = require('jsonwebtoken');
 var concat = require('concat-stream');
 const { promisify } = require('util');
 const sleep = promisify(setTimeout);
+const { createMiddleware: createPrometheusMiddleware } = require('@promster/express');
+const { createServer } = require('@promster/server');
 
 app.set('json spaces', 2);
 app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
+
+app.use(createPrometheusMiddleware({ app }));
+
+// Create metrics endpoint on separate server
+createServer({ port: 9153 }).then(() => console.log('@promster/server started on port 9153.'));
 
 app.use(morgan('combined'));
 
