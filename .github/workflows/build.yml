@@ -17,9 +17,6 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      # - name: Build and test the image
-      #   run: ./tests.sh
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
@@ -34,8 +31,11 @@ jobs:
           echo "Flags:     ${{ steps.buildx.outputs.flags }}"
           echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
 
-      - name: Test an ARM build
-        run:  docker buildx build --output "type=image,push=false" --platform linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/ppc64le,linux/s390x  --tag testarm:snapshot --file ./Dockerfile .
+      - name: Build and test the image
+        run: ./tests.sh
+
+      # - name: Test an ARM build
+      #   run:  docker buildx build --output "type=image,push=false" --platform linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/ppc64le,linux/s390x  --tag testarm:snapshot --file ./Dockerfile .
 
       - name: Scan the image
         id: scan
