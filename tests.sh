@@ -26,9 +26,9 @@ if ! [ -x "$(command -v jq)" ]; then
     sudo apt -y install jq
 fi
 
-
+PLATFORM=${DOCKER_PLATFORM:-linux/amd64}
 message " Build image "
-docker build -t mendhak/http-https-echo:latest .
+docker buildx build --output "type=image,push=false" --platform $PLATFORM  --tag mendhak/http-https-echo:latest --file ./Dockerfile .
 
 mkdir -p testarea
 pushd testarea
