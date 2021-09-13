@@ -20,6 +20,9 @@ jobs:
       - name: Build and test the image
         run: ./tests.sh
 
+      - name: Test an ARM build
+        run:  docker buildx build --output "type=image,push=false" --platform linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/ppc64le,linux/s390x  --tag testarm:snapshot --file ./Dockerfile .
+
       - name: Scan the image
         id: scan
         uses: anchore/scan-action@v2
