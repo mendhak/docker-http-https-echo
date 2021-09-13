@@ -34,7 +34,7 @@ jobs:
       - name: Build the image multiplatform
         run: docker buildx build --output "type=image,push=false" --platform linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/ppc64le,linux/s390x  --tag mendhak/http-https-echo:latest --file ./Dockerfile .
 
-      - name: Run tests
+      - name: Build the image single platform and run tests
         run: ./tests.sh
       
       - name: Scan the image
