@@ -28,7 +28,8 @@ fi
 
 PLATFORM=${DOCKER_PLATFORM:-linux/amd64}
 message " Build image "
-docker buildx build --output "type=image,push=false" --platform $PLATFORM  --tag mendhak/http-https-echo:latest --file ./Dockerfile .
+# Set output type=docker so it goes into local images
+docker buildx build --output "type=docker,push=false" --platform $PLATFORM  --tag mendhak/http-https-echo:latest --file ./Dockerfile .
 
 mkdir -p testarea
 pushd testarea
