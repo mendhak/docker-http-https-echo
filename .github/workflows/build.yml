@@ -31,8 +31,11 @@ jobs:
           echo "Flags:     ${{ steps.buildx.outputs.flags }}"
           echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
 
-      - name: Build and test the image
-        run: DOCKER_PLATFORM=linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/ppc64le,linux/s390x ./tests.sh
+      - name: Build the image multiplatform
+        run: docker buildx build --output "type=image,push=false" --platform linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/ppc64le,linux/s390x  --tag mendhak/http-https-echo:latest --file ./Dockerfile .
+
+      - name: Run tests
+        run: ./tests.sh
       
       - name: Scan the image
         id: scan
