@@ -26,7 +26,6 @@ if ! [ -x "$(command -v jq)" ]; then
     sudo apt -y install jq
 fi
 
-
 message " Build image "
 docker build -t mendhak/http-https-echo:latest .
 
