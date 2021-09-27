@@ -1,3 +1,7 @@
+## Version `20` - 2021-09-27
+
+* The image is available for multiple architectures.  This is being done via [docker buildx](https://github.com/mendhak/docker-http-https-echo/blob/9f511eae7c928d7f9543842598f9565c19828300/.github/workflows/publish.yml#L32) on Github Actions.
+
 ## Version `19` - 2021-04-08
 
 * You can run the container as a different user than the one defined in the image. 
