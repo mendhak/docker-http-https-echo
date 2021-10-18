@@ -115,6 +115,14 @@ Will contain a `json` property in the response/output.
         }
     }
 
+## Send an empty response
+
+You can disable the JSON output in the response by setting the environment variable `ECHO_BACK_TO_CLIENT`. For example,
+
+```bash
+docker run -e ECHO_BACK_TO_CLIENT=false -p 8080:8080 -p 8443:8443 --rm -t mendhak/http-https-echo:20
+```
+
 ## Custom status code
 
 Use `x-set-response-status-code` to set a custom status code. For example,
