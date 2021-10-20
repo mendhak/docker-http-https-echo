@@ -66,10 +66,10 @@ app.all('*', (req, res) => {
   const sleepTime = parseInt(req.headers["x-set-response-delay-ms"], 0)
   sleep(sleepTime).then(() => {
     
-    if (process.env.ECHO_BACK_TO_CLIENT == "" || process.env.ECHO_BACK_TO_CLIENT == "true"){
-      res.json(echo);
-    } else {
+    if (process.env.ECHO_BACK_TO_CLIENT != undefined && process.env.ECHO_BACK_TO_CLIENT == "false"){
       res.end();
+    } else {
+      res.json(echo);
     }
 
     if (process.env.LOG_IGNORE_PATH != req.path) {
