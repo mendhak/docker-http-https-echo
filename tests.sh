@@ -140,6 +140,21 @@ fi
 message " Stop containers "
 docker stop http-echo-tests
 
+message " Start container with empty responses "
+docker run -d --rm -e ECHO_BACK_TO_CLIENT=false --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
+sleep 5
+REQUEST=$(curl -s -k http://localhost:8080/a/b/c)
+if [[ -z ${REQUEST} ]]
+then
+    passed "Response is empty."
+else
+    failed "Expected empty response, but got a non-empty response."
+    echo $REQUEST
+    exit 1
+fi
+
+message " Stop containers "
+docker stop http-echo-tests
 
 message " Start container with JWT_HEADER "
 docker run -d --rm -e JWT_HEADER=Authentication --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
