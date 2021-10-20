@@ -1,3 +1,7 @@
+## Version `21` - 2021-10-20
+
+* You can send an empty response to the client by setting the environment variable `ECHO_BACK_TO_CLIENT=false` 
+
 ## Version `20` - 2021-09-27
 
 * The image is available for multiple architectures.  This is being done via [docker buildx](https://github.com/mendhak/docker-http-https-echo/blob/9f511eae7c928d7f9543842598f9565c19828300/.github/workflows/publish.yml#L32) on Github Actions.
