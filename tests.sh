@@ -41,9 +41,10 @@ sleep 5
 
 
 message " Make http(s) request, and test the path, method, header and status code. "
-REQUEST=$(curl -s -k -X PUT -H "Arbitrary:Header" -d aaa=bbb https://localhost:8443/hello-world)
+REQUEST=$(curl -s -k -X PUT -H "Arbitrary:Header" -d aaa=bbb 'https://localhost:8443/hello-world?ccc=ddd&myquery=98765')
 if [ $(echo $REQUEST | jq -r '.path') == '/hello-world' ] && \
    [ $(echo $REQUEST | jq -r '.method') == 'PUT' ] && \
+   [ $(echo $REQUEST | jq -r '.query.myquery') == '98765' ] && \
    [ $(echo $REQUEST | jq -r '.headers.arbitrary') == 'Header' ]
 then
     passed "HTTPS request passed."
