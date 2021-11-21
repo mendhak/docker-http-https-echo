@@ -181,7 +181,7 @@ message " Start container with JWT_HEADER "
 docker run -d --rm -e JWT_HEADER=Authentication --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
 sleep 5
 
-REQUEST=$(curl -s -k -H "Authentication: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c" https://localhost:8443/ )
+REQUEST=$(curl -s -k -H "Authentication: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c" https://localhost:8443/ )
 if [ $(echo $REQUEST | jq -r '.jwt.header.typ') == 'JWT' ] && \
    [ $(echo $REQUEST | jq -r '.jwt.header.alg') == 'HS256' ] && \
    [ $(echo $REQUEST | jq -r '.jwt.payload.sub') == '1234567890' ]
