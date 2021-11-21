@@ -1,3 +1,7 @@
+## Version `22` - 2021-11-21
+
+* You can now also send the response delay and response code as querystring parameters. 
+
 ## Version `21` - 2021-10-20
 
 * You can send an empty response to the client by setting the environment variable `ECHO_BACK_TO_CLIENT=false` 
