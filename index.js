@@ -63,7 +63,7 @@ app.all('*', (req, res) => {
     res.status(setResponseStatusCode)
   }
 
-  const sleepTime = parseInt(req.headers["x-set-response-delay-ms"], 0)
+  const sleepTime = parseInt(req.headers["x-set-response-delay-ms"] || req.query["x-set-response-delay-ms"], 0)
   sleep(sleepTime).then(() => {
     
     if (process.env.ECHO_BACK_TO_CLIENT != undefined && process.env.ECHO_BACK_TO_CLIENT == "false"){

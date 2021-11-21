@@ -66,9 +66,18 @@ fi
 
 REQUEST_WITH_SLEEP_MS=$(curl -o /dev/null -Ss -H "x-set-response-delay-ms: 6000" -k https://localhost:8443/ -w '%{time_total}')
 if [[ $(echo "$REQUEST_WITH_SLEEP_MS>5" | bc -l) == 1 ]]; then 
-    passed "Request with response delay passed"
+    passed "Request header with response delay passed"
 else 
-    failed "Request with response delay failed"
+    failed "Request header with response delay failed"
+    echo $REQUEST_WITH_SLEEP_MS
+    exit 1
+fi
+
+REQUEST_WITH_SLEEP_MS=$(curl -o /dev/null -Ss -k https://localhost:8443/sleep/test?x-set-response-delay-ms=5000 -w '%{time_total}')
+if [[ $(echo "$REQUEST_WITH_SLEEP_MS>4" | bc -l) == 1 ]]; then 
+    passed "Request query with response delay passed"
+else 
+    failed "Request query with response delay failed"
     echo $REQUEST_WITH_SLEEP_MS
     exit 1
 fi
