@@ -58,7 +58,7 @@ app.all('*', (req, res) => {
       echo.jwt = decoded;
     }
   }
-  const setResponseStatusCode = parseInt(req.headers["x-set-response-status-code"], 10)
+  const setResponseStatusCode = parseInt(req.headers["x-set-response-status-code"] || req.query["x-set-response-status-code"], 10)
   if (100 <= setResponseStatusCode && setResponseStatusCode < 600) {
     res.status(setResponseStatusCode)
   }

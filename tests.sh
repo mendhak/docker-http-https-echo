@@ -57,9 +57,20 @@ REQUEST_WITH_STATUS_CODE=$(curl -s -k -o /dev/null -w "%{http_code}" -H "x-set-r
 REQUEST_WITH_STATUS_CODE_V=$(curl -v -k -o /dev/null -w "%{http_code}" -H "x-set-response-status-code: 404" https://localhost:8443/hello-world)
 if [ $(echo $REQUEST_WITH_STATUS_CODE == '404') ]
 then
-    passed "HTTPS status code request passed."
+    passed "HTTPS status code header passed."
 else
-    failed "HTTPS status code request failed."
+    failed "HTTPS status code header failed."
+    echo $REQUEST_WITH_STATUS_CODE_V
+    exit 1
+fi
+
+REQUEST_WITH_STATUS_CODE=$(curl -s -k -o /dev/null -w "%{http_code}" https://localhost:8443/status/test?x-set-response-status-code=419)
+REQUEST_WITH_STATUS_CODE_V=$(curl -v -k -o /dev/null -w "%{http_code}" https://localhost:8443/hello-world?x-set-response-status-code=419)
+if [ $(echo $REQUEST_WITH_STATUS_CODE == '419') ]
+then
+    passed "HTTPS status code querystring passed."
+else
+    failed "HTTPS status code querystring failed."
     echo $REQUEST_WITH_STATUS_CODE_V
     exit 1
 fi
