@@ -125,14 +125,21 @@ docker run -e ECHO_BACK_TO_CLIENT=false -p 8080:8080 -p 8443:8443 --rm -t mendha
 
 ## Custom status code
 
-Use `x-set-response-status-code` to set a custom status code. For example,
+Use `x-set-response-status-code` to set a custom status code. 
 
+You can send it as a header:
 
 ```bash
 curl -v -H "x-set-response-status-code: 401" http://localhost:8080/
 ```
 
-Will cause the reponse status code to be:
+You can send it as a querystring parameter:
+
+```bash
+curl -v http://localhost:8080/some/path?x-set-response-status-code=401
+```
+
+That will cause the reponse status code to be:
 
 ```
  HTTP/1.1 401 Unauthorized
@@ -142,8 +149,16 @@ Will cause the reponse status code to be:
 
 Use `x-set-response-delay-ms` to set a custom delay in milliseconds.  This will allow you to simulate slow responses. 
 
+You can send it as a header:
+
 ```bash
 curl -v -H "x-set-response-delay-ms: 6000" http://localhost:8080/
+```
+
+You can send it as a querystring parameter: 
+
+```bash
+curl -v http://localhost:8080/some/path?x-set-response-delay-ms=6000
 ```
 
 
