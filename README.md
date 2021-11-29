@@ -28,7 +28,18 @@ Then, issue a request via your browser or curl, and watch the response, as well 
 
     curl -k -X PUT -H "Arbitrary:Header" -d aaa=bbb https://localhost:8443/hello-world
 
+## Environment variables 
 
+| Name                | Default value     | Description                                                                    |
+| --------------------| ------------------| ------------------------------------------------------------------------------ |
+| HTTP_PORT           | 8080              | HTTP port to listen on                                                         |
+| HTTPS_PORT          | 8443              | HTTPS port to listen on                                                        |
+| ECHO_BACK_TO_CLIENT | true              | Output JSON in the response                                                    |
+| JWT_HEADER          | -                 | Header that contains the JWT token. Echo output will contain the decoded JWT.  |
+| LOG_REQUESTS        | true              | Log incoming requests with 'combined' morgan logger                            |
+| LOG_IGNORE_PATH     | -                 | Path to exclude from verbose logging to stdout                                 |
+| LOG_SEPARATOR       | true              | Line of dashes before each requests in verbose logging to stdout               |
+| LOG_WITHOUT_NEWLINE | false             | Do not print newline in the json in verbose logging to stdout                  |
 ## Choose your ports
 
 You can choose a different internal port instead of 8080 and 8443 with the `HTTP_PORT` and `HTTPS_PORT` environment variables.
