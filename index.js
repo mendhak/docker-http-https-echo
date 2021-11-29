@@ -12,7 +12,7 @@ const sleep = promisify(setTimeout);
 app.set('json spaces', 2);
 app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
 
-if (process.env.LOG_REQUESTS === "true") {
+if (process.env.LOG_REQUESTS === 'true') {
   app.use(morgan('combined'));
 }
 
@@ -75,7 +75,10 @@ app.all('*', (req, res) => {
     }
 
     if (process.env.LOG_IGNORE_PATH != req.path) {
-  
+      if (process.env.LOG_SEPARATOR === 'true') {
+        console.log('-----------------')
+      }
+
       let spacer = 4;
       if(process.env.LOG_WITHOUT_NEWLINE){
         spacer = null;
