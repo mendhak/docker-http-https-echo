@@ -1,4 +1,4 @@
-FROM node:14-alpine AS build
+FROM node:16-alpine AS build
 
 WORKDIR /app
 COPY . /app
@@ -17,7 +17,7 @@ RUN set -ex \
   && chown -R node:node /app \
   && chmod +r /app/privkey.pem
 
-FROM node:14-alpine AS final
+FROM node:16-alpine AS final
 WORKDIR /app
 COPY --from=build /app /app
 ENV HTTP_PORT=8080 HTTPS_PORT=8443
