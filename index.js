@@ -75,8 +75,7 @@ app.all('*', (req, res) => {
     }
 
     if (process.env.LOG_IGNORE_PATH != req.path) {
-      console.log('-----------------')
-  
+ 
       let spacer = 4;
       if(process.env.LOG_WITHOUT_NEWLINE){
         spacer = null;

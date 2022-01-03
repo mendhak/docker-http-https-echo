@@ -238,7 +238,7 @@ docker run -d --rm -e LOG_WITHOUT_NEWLINE=1 --name http-echo-tests -p 8080:8080 
 sleep 5
 curl -s -k -X POST -d "tiramisu" https://localhost:8443/ > /dev/null
 
-if [ $(docker logs http-echo-tests | wc -l) == 4 ] && \
+if [ $(docker logs http-echo-tests | wc -l) == 3 ] && \
    [ $(docker logs http-echo-tests | grep tiramisu) ]
 then
     passed "LOG_WITHOUT_NEWLINE logged output in single line"
