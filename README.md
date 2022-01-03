@@ -78,6 +78,13 @@ Now make your request with `Authentication: eyJ...` header (it should also work 
 
 And in the output you should see a `jwt` section.
 
+## Disable ExpressJS log lines
+
+In the log output set the environment variable `DISABLE_REQUEST_LOGS` to true, to disable the specific ExpressJS request log lines. The ones like `::ffff:172.17.0.1 - - [03/Jan/2022:21:31:51 +0000] "GET /xyz HTTP/1.1" 200 423 "-" "curl/7.68.0"`.  The JSON output will still appear.
+
+    docker run --rm -e DISABLE_REQUEST_LOGS=true --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:22
+
+
 ## Do not log specific path
 
 Set the environment variable `LOG_IGNORE_PATH` to a path you would like to exclude from verbose logging to stdout.
