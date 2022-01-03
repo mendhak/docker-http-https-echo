@@ -216,6 +216,23 @@ fi
 message " Stop containers "
 docker stop http-echo-tests
 
+message " Start container with DISABLE_REQUEST_LOGS "
+docker run -d --rm -e DISABLE_REQUEST_LOGS=true --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
+sleep 5
+curl -s -k -X GET https://localhost:8443/strawberry > /dev/null
+if  [ $(docker logs http-echo-tests | grep -c "GET /strawberry HTTP/1.1") -eq 0 ]
+then
+    passed "DISABLE_REQUEST_LOGS disabled Express HTTP logging"
+else
+    failed "DISABLE_REQUEST_LOGS failed"
+    docker logs http-echo-tests
+    exit 1
+fi
+
+
+message " Stop containers "
+docker stop http-echo-tests
+
 message " Start container with LOG_WITHOUT_NEWLINE "
 docker run -d --rm -e LOG_WITHOUT_NEWLINE=1 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
 sleep 5

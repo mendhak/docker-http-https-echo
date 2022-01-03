@@ -12,7 +12,9 @@ const sleep = promisify(setTimeout);
 app.set('json spaces', 2);
 app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
 
-app.use(morgan('combined'));
+if(process.env.DISABLE_REQUEST_LOGS !== 'true'){
+  app.use(morgan('combined'));
+}
 
 app.use(function(req, res, next){
   req.pipe(concat(function(data){
