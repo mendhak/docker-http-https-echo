@@ -1,3 +1,9 @@
+## Version `23` - 2022-01-05
+
+* Environment variable `DISABLE_REQUEST_LOGS=true` will remove the ExpressJS request log lines 
+* Updated to Node 16
+* Removed the `-----------` separator
+
 ## Version `22` - 2021-11-21
 
 * You can now also send the response delay and response code as querystring parameters. 
