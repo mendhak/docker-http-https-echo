@@ -71,7 +71,7 @@ app.all('*', (req, res) => {
     if (process.env.ECHO_BACK_TO_CLIENT != undefined && process.env.ECHO_BACK_TO_CLIENT == "false"){
       res.end();
     } else if ("raw_response" in req.query && req.query["raw_response"] == "true") {
-      res.send(new buffer.RawResponse(req.body));
+      res.send(Buffer.from(req.body));
     } else {
       res.json(echo);
     }
