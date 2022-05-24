@@ -177,6 +177,23 @@ fi
 message " Stop containers "
 docker stop http-echo-tests
 
+message " Start container with response body only "
+docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
+sleep 5
+RESPONSE=$(curl -s -k -X POST -d 'cauliflower' http://localhost:8080/a/b/c?response_body_only=true)
+if [[ ${RESPONSE} == "cauliflower" ]]
+then
+    passed "Response body only received."
+else
+    failed "Expected response body only."
+    echo $RESPONSE
+    exit 1
+fi
+
+
+message " Stop containers "
+docker stop http-echo-tests
+
 message " Start container with JWT_HEADER "
 docker run -d --rm -e JWT_HEADER=Authentication --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
 sleep 5
