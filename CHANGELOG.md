@@ -1,3 +1,7 @@
+## Version `24` - 2022-05-24
+
+* Querystring parameter, `response_body_only=true` returns just the request body in the response.
+
 ## Version `23` - 2022-01-05
 
 * Environment variable `DISABLE_REQUEST_LOGS=true` will remove the ExpressJS request log lines 
