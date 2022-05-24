@@ -70,8 +70,8 @@ app.all('*', (req, res) => {
     
     if (process.env.ECHO_BACK_TO_CLIENT != undefined && process.env.ECHO_BACK_TO_CLIENT == "false"){
       res.end();
-    } else if ("raw_response" in req.query && req.query["raw_response"] == "true") {
-      res.send(Buffer.from(req.body));
+    } else if ("response_body_only" in req.query && req.query["response_body_only"] == "true") {
+      res.send(req.body);
     } else {
       res.json(echo);
     }
