@@ -180,9 +180,9 @@ docker stop http-echo-tests
 message " Start container with response body only "
 docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
 sleep 5
-RESPONSE=$(curl -s -k -i -X POST -d 'cauliflower' 'http://localhost:8080/a/b/c?response_body_only=true&content_type=application%2Fzip')
-CONTENT_TYPE=$(echo $RESPONSE | grep -i 'Content-Type')
-RESPONSE_BODY=$(echo $RESPONSE | tail -n 1)
+curl -s -k -i -X POST -d 'cauliflower' 'http://localhost:8080/a/b/c?response_body_only=true&content_type=application%2Fzip' -o res.txt
+CONTENT_TYPE=$(cat res.txt | grep -i 'Content-Type')
+RESPONSE_BODY=$(cat res.txt | tail -n 1)
 if [[ ${RESPONSE_BODY} == "cauliflower" ]] && [[ ${CONTENT_TYPE} == *"application/zip"* ]]
 then
     passed "Response body only received."
