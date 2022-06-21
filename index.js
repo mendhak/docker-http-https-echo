@@ -71,6 +71,9 @@ app.all('*', (req, res) => {
     if (process.env.ECHO_BACK_TO_CLIENT != undefined && process.env.ECHO_BACK_TO_CLIENT == "false"){
       res.end();
     } else if ("response_body_only" in req.query && req.query["response_body_only"] == "true") {
+      if ("content_type" in req.query) {
+        res.type(req.query["content_type"]);
+      }
       res.send(req.body);
     } else {
       res.json(echo);

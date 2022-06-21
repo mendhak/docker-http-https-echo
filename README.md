@@ -170,13 +170,14 @@ curl -v http://localhost:8080/some/path?x-set-response-delay-ms=6000
 
 ## Only return body in the response
 
-Use the querystring parameter, `response_body_only=true` to get just the request body in the response, none of the associated metadata. 
+Use the query-string parameter, `response_body_only=true` to get just the request body in the response, none of the associated metadata.
+You may use the `content_type` query-string parameter to specify a `Content-Type` for the response.
 
 ```bash
-curl -s -k -X POST -d 'cauliflower' http://localhost:8080/a/b/c?response_body_only=true
+curl -s -k -X POST -d 'cauliflower' http://localhost:8080/a/b/c?response_body_only=true&content_type=application%2Fzip
 ```
 
-The output will be 'cauliflower'. 
+The output will be 'cauliflower'.
 
 
 ## Output
