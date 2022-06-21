@@ -189,6 +189,8 @@ then
 else
     failed "Expected response body only."
     echo $RESPONSE
+    echo $CONTENT_TYPE
+    echo $RESPONSE_BODY
     exit 1
 fi
 
