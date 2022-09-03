@@ -14,7 +14,7 @@
   "author": "Mendhak <gpslogger@mendhak.com>",
   "license": "BSD-3-Clause",
   "engines": {
-    "node": ">=6.3.0"
+    "node": ">=16.0.0"
   },
   "dependencies": {
     "concat-stream": "^2.0.0",
