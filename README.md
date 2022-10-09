@@ -152,6 +152,29 @@ That will cause the reponse status code to be:
  HTTP/1.1 401 Unauthorized
 ```
 
+## Set response Content-Type
+
+Use `x-set-response-content-type` to set the Content-Type of the response.  
+
+You can send it as a header:
+
+```bash
+curl -H "X-Set-Response-Content-Type: text/plain" -kv https://localhost:8443/
+```
+
+You can send it as a querystring parameter:
+
+```bash
+curl  -kv https://localhost:8443/path?x-set-response-content-type=text/plain
+```
+
+This will cause the response content type to be:
+
+```
+< Content-Type: text/plain; charset=utf-8
+```
+
+
 ## Add a delay before response
 
 Use `x-set-response-delay-ms` to set a custom delay in milliseconds.  This will allow you to simulate slow responses. 
