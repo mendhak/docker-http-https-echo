@@ -67,6 +67,12 @@ app.all('*', (req, res) => {
 
   const sleepTime = parseInt(req.headers["x-set-response-delay-ms"] || req.query["x-set-response-delay-ms"], 0)
   sleep(sleepTime).then(() => {
+
+    const setResponseContentType = req.headers["x-set-response-content-type"] || req.query["x-set-response-content-type"];
+
+    if(setResponseContentType){
+      res.contentType(setResponseContentType);
+    }
     
     if (process.env.ECHO_BACK_TO_CLIENT != undefined && process.env.ECHO_BACK_TO_CLIENT == "false"){
       res.end();

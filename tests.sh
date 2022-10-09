@@ -33,7 +33,7 @@ mkdir -p testarea
 pushd testarea
 
 message " Cleaning up from previous test run "
-docker ps -q --filter "name=http-echo-tests" | grep -q . && docker stop http-echo-tests
+docker ps -aq --filter "name=http-echo-tests" | grep -q . && docker stop http-echo-tests && docker rm -f http-echo-tests
 
 message " Start container normally "
 docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
@@ -74,6 +74,25 @@ else
     echo $REQUEST_WITH_STATUS_CODE_V
     exit 1
 fi
+
+REQUEST_WITH_CONTENT_TYPE_HEADER=$(curl -o /dev/null -k -Ss -w "%{content_type}" -H "x-set-response-content-type: aaaa/bbbb" https://localhost:8443/)
+if [[ "$REQUEST_WITH_CONTENT_TYPE_HEADER" == *"aaaa/bbbb"* ]]; then
+  passed "Request with custom response type header, passed"
+else
+  echo $REQUEST_WITH_CONTENT_TYPE_HEADER
+  failed "Request with custom response type header, failed."
+  exit 1
+fi
+
+REQUEST_WITH_CONTENT_TYPE_PARAMETER=$(curl -o /dev/null -k -Ss -w "%{content_type}" https://localhost:8443/green/chocolate?x-set-response-content-type=jellyfish/cabbage)
+if [[ "$REQUEST_WITH_CONTENT_TYPE_PARAMETER" == *"jellyfish/cabbage"* ]]; then
+  passed "Request with custom response type parameter, passed"
+else
+  echo $REQUEST_WITH_CONTENT_TYPE_PARAMETER
+  failed "Request with custom response type parameter, failed."
+  exit 1
+fi
+
 
 REQUEST_WITH_SLEEP_MS=$(curl -o /dev/null -Ss -H "x-set-response-delay-ms: 6000" -k https://localhost:8443/ -w '%{time_total}')
 if [[ $(echo "$REQUEST_WITH_SLEEP_MS>5" | bc -l) == 1 ]]; then 
