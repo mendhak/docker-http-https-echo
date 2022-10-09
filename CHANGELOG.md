@@ -1,5 +1,6 @@
 ## Version `25` - 2022-10-09
 
+* You can pass `x-set-response-content-type` in header, or querystring parameter, to set the content type of the response. 
 * Upgrade to Node 16. 
 
 ## Version `24` - 2022-05-24
