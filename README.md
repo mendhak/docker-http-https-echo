@@ -201,6 +201,17 @@ curl -s -k -X POST -d 'cauliflower' http://localhost:8080/a/b/c?response_body_on
 
 The output will be 'cauliflower'. 
 
+## Include environment variables in the response
+
+You can have all environment variables added to the response body.  Because this can contain sensitive information, it is not a default behavior.  Pass the `ECHO_INCLUDE_ENV_VARS=1` environment variable in. 
+
+```bash
+docker run -d --rm -e ECHO_INCLUDE_ENV_VARS=1 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:25
+```
+
+Then do a normal request via curl or browser, and you will see the `env` property in the response body.  
+
+
 ## Client certificate details (mTLS) in the response
 
 To get client certificate details in the response body, start the container with `MTLS_ENABLE=1` environment variable.  When passing a client certificate, the details about that certificate can be echoed back in the response body. The client certificate will not be validated.  
