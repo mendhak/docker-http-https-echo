@@ -324,5 +324,44 @@ fi
 message " Stop containers "
 docker stop http-echo-tests
 
+message " Check that mTLS server responds with client certificate details"
+# Might as well just reuse any cert
+cp ../generate-cert.sh .
+bash generate-cert.sh
+docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -p 8444:8444 -t mendhak/http-https-echo
+sleep 5
+COMMON_NAME="$(curl -sk --cert cert.pem --key privkey.pem  https://localhost:8444/ | jq -r  '.clientCertificate.subject.CN')"
+if [ "$COMMON_NAME" == "my.example.com" ]
+then
+    passed "Client certificate details are present in the output"
+else
+    failed "Client certificate details not found in output"
+    exit 1
+fi
+
+message " Check that HTTPS server (non-MTLS) does not have any client certificate details"
+CLIENT_CERT="$(curl -sk --cert cert.pem --key privkey.pem  https://localhost:8443/ | jq -r  '.clientCertificate')"
+if [ "$CLIENT_CERT" == "{}" ]
+then
+    passed "Client certificate details are not present in regular HTTPS server"
+else
+    failed "Client certificate details found in output? ${CLIENT_CERT}"
+    exit 1
+fi
+
+message " Check that HTTP server does not have any client certificate property"
+CLIENT_CERT=$(curl -sk --cert cert.pem --key privkey.pem  http://localhost:8080/  | jq  'has("clientCertificate")')
+if [ "$CLIENT_CERT" == "false" ]
+then
+    passed "Client certificate details are not present in regular HTTP server"
+else
+    failed "Client certificate details found in output? ${CLIENT_CERT}"
+    exit 1
+fi
+
+message " Stop containers "
+docker stop http-echo-tests
+
 popd
 rm -rf testarea
+message "DONE"
