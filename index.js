@@ -23,6 +23,7 @@ app.use(function(req, res, next){
   }));
 });
 
+//Handle all paths
 app.all('*', (req, res) => {
   const echo = {
     path: req.path,
@@ -46,19 +47,23 @@ app.all('*', (req, res) => {
     }
   };
 
+  //Add client certificate details to the output, if present
+  //This only works if `requestCert` is true when starting the server. 
   if(req.socket.getPeerCertificate){
-    //Add client certificate details to the output
     echo.clientCertificate = req.socket.getPeerCertificate();
   }
   
+  //Include visible environment variables
   if(process.env.ECHO_INCLUDE_ENV_VARS){
     echo.env = process.env;
   }
 
+  //If the Content-Type of the incoming body `is` JSON, it can be parsed and returned in the body
   if(req.is('application/json')){
     echo.json = JSON.parse(req.body)
   }
 
+  //If there's a JWT header, parse it and decode and put it in the response
   if (process.env.JWT_HEADER) {
     let token = req.headers[process.env.JWT_HEADER.toLowerCase()];
     if (!token) {
@@ -69,28 +74,38 @@ app.all('*', (req, res) => {
       echo.jwt = decoded;
     }
   }
+
+  //Set the status code to what the user wants
   const setResponseStatusCode = parseInt(req.headers["x-set-response-status-code"] || req.query["x-set-response-status-code"], 10)
   if (100 <= setResponseStatusCode && setResponseStatusCode < 600) {
     res.status(setResponseStatusCode)
   }
 
+  //Delay the response for a user defined time
   const sleepTime = parseInt(req.headers["x-set-response-delay-ms"] || req.query["x-set-response-delay-ms"], 0)
   sleep(sleepTime).then(() => {
 
+    //Set the response content type to what the user wants
     const setResponseContentType = req.headers["x-set-response-content-type"] || req.query["x-set-response-content-type"];
 
     if(setResponseContentType){
       res.contentType(setResponseContentType);
     }
     
+    //Ability to send an empty response back
     if (process.env.ECHO_BACK_TO_CLIENT != undefined && process.env.ECHO_BACK_TO_CLIENT == "false"){
       res.end();
-    } else if ("response_body_only" in req.query && req.query["response_body_only"] == "true") {
+    } 
+    //Ability to send just the request body in the response, nothing else
+    else if ("response_body_only" in req.query && req.query["response_body_only"] == "true") {
       res.send(req.body);
-    } else {
+    } 
+    //Normal behavior, send everything back
+    else {
       res.json(echo);
     }
 
+    //Certain paths can be ignored in the container logs, useful to reduce noise from healthchecks
     if (process.env.LOG_IGNORE_PATH != req.path) {
  
       let spacer = 4;
@@ -110,6 +125,7 @@ let sslOpts = {
   cert: require('fs').readFileSync('fullchain.pem')
 };
 
+//Whether to enable the client certificate feature
 if(process.env.MTLS_ENABLE){
     sslOpts = { 
       requestCert: true, 
