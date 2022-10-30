@@ -46,6 +46,9 @@ app.all('*', (req, res) => {
     }
   };
 
+  //Add client certificate details to the output
+  echo['client-certificate'] = req.socket.getPeerCertificate();
+
   if(req.is('application/json')){
     echo.json = JSON.parse(req.body)
   }
@@ -103,7 +106,8 @@ const sslOpts = {
 
 var httpServer = http.createServer(app).listen(process.env.HTTP_PORT || 8080);
 var httpsServer = https.createServer(sslOpts,app).listen(process.env.HTTPS_PORT || 8443);
-console.log(`Listening on ports ${process.env.HTTP_PORT || 8080} and ${process.env.HTTPS_PORT || 8443}`);
+var httpsMTlsServer = https.createServer( { requestCert: true, rejectUnauthorized: false, ...sslOpts }, app).listen(process.env.HTTPS_MTLS_PORT || 8444);
+console.log(`Listening on ports ${process.env.HTTP_PORT || 8080} for http, and ${process.env.HTTPS_PORT || 8443} for https, and ${process.env.HTTPS_MTLS_PORT || 8444} for https_mtls`);
 
 let calledClose = false;
 
@@ -123,8 +127,10 @@ function shutDown(){
   calledClose = true;
   httpServer.close(function() {
     httpsServer.close(function() {
-      console.log("HTTP and HTTPS servers closed. Asking process to exit.");
-      process.exit()
+      httpsMTlsServer.close(function(){
+        console.log("HTTP and HTTPS servers closed. Asking process to exit.");
+        process.exit()
+      })
     });
   });
 }
