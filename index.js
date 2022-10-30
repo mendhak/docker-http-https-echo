@@ -102,12 +102,18 @@ app.all('*', (req, res) => {
   
 });
 
-const sslOpts = {
+let sslOpts = {
   key: require('fs').readFileSync('privkey.pem'),
-  cert: require('fs').readFileSync('fullchain.pem'),
-  requestCert: true, 
-  rejectUnauthorized: false
+  cert: require('fs').readFileSync('fullchain.pem')
 };
+
+if(process.env.MTLS_ENABLE){
+    sslOpts = { 
+      requestCert: true, 
+      rejectUnauthorized: false, 
+      ...sslOpts 
+    }
+}
 
 var httpServer = http.createServer(app).listen(process.env.HTTP_PORT || 8080);
 var httpsServer = https.createServer(sslOpts,app).listen(process.env.HTTPS_PORT || 8443);

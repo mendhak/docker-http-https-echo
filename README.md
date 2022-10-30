@@ -203,7 +203,7 @@ The output will be 'cauliflower'.
 
 ## Client certificate details (mTLS) in the response
 
-If you pass a client certificate, then the details about that certificate can be echoed back in the response body. The client certificate will not be validated.  
+To work with client certificates, start the container with the `MTLS_ENABLE=1` environment variable.  When passing a client certificate, the details about that certificate can be echoed back in the response body. The client certificate will not be validated.  
 
 For example, invoke using curl, passing a certificate and key.  
 

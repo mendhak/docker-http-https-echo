@@ -328,7 +328,7 @@ message " Check that mTLS server responds with client certificate details"
 # Might as well just reuse any cert
 cp ../generate-cert.sh .
 bash generate-cert.sh
-docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
+docker run -d --rm -e MTLS_ENABLE=1 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
 sleep 5
 COMMON_NAME="$(curl -sk --cert cert.pem --key privkey.pem  https://localhost:8443/ | jq -r  '.clientCertificate.subject.CN')"
 if [ "$COMMON_NAME" == "my.example.com" ]
