@@ -1,3 +1,8 @@
+## Version `26` - 2022-xx-xx
+
+* Environment variable `MTLS_ENABLE=1` will show details of the client certificate passed in the response body
+
+
 ## Version `25` - 2022-10-09
 
 * You can pass `x-set-response-content-type` in header, or querystring parameter, to set the content type of the response. 
