@@ -47,7 +47,7 @@ app.all('*', (req, res) => {
   };
 
   //Add client certificate details to the output
-  echo['client-certificate'] = req.socket.getPeerCertificate();
+  echo['clientCertificate'] = req.socket.getPeerCertificate();
 
   if(req.is('application/json')){
     echo.json = JSON.parse(req.body)
