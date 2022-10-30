@@ -1,7 +1,7 @@
 ## Version `26` - 2022-xx-xx
 
 * Environment variable `MTLS_ENABLE=1` will show details of the client certificate passed in the response body
-
+* Environment variable `ECHO_INCLUDE_ENV_VARS=1` will include the container (or script's) environment variables in the response body. 
 
 ## Version `25` - 2022-10-09
 
