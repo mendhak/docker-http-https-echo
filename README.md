@@ -203,7 +203,9 @@ The output will be 'cauliflower'.
 
 ## Include environment variables in the response
 
-You can have all environment variables added to the response body.  Because this can contain sensitive information, it is not a default behavior.  Pass the `ECHO_INCLUDE_ENV_VARS=1` environment variable in. 
+You can have environment variables (that are visible to the echo server's process) added to the response body.  Because this could contain sensitive information, it is not a default behavior.  
+
+Pass the `ECHO_INCLUDE_ENV_VARS=1` environment variable in. 
 
 ```bash
 docker run -d --rm -e ECHO_INCLUDE_ENV_VARS=1 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:25
