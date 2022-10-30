@@ -105,12 +105,13 @@ app.all('*', (req, res) => {
 const sslOpts = {
   key: require('fs').readFileSync('privkey.pem'),
   cert: require('fs').readFileSync('fullchain.pem'),
+  requestCert: true, 
+  rejectUnauthorized: false
 };
 
 var httpServer = http.createServer(app).listen(process.env.HTTP_PORT || 8080);
 var httpsServer = https.createServer(sslOpts,app).listen(process.env.HTTPS_PORT || 8443);
-var httpsMTlsServer = https.createServer( { requestCert: true, rejectUnauthorized: false, ...sslOpts }, app).listen(process.env.HTTPS_MTLS_PORT || 8444);
-console.log(`Listening on ports ${process.env.HTTP_PORT || 8080} for http, and ${process.env.HTTPS_PORT || 8443} for https, and ${process.env.HTTPS_MTLS_PORT || 8444} for https_mtls`);
+console.log(`Listening on ports ${process.env.HTTP_PORT || 8080} for http, and ${process.env.HTTPS_PORT || 8443} for https.`);
 
 let calledClose = false;
 
@@ -130,10 +131,8 @@ function shutDown(){
   calledClose = true;
   httpServer.close(function() {
     httpsServer.close(function() {
-      httpsMTlsServer.close(function(){
-        console.log("HTTP and HTTPS servers closed. Asking process to exit.");
-        process.exit()
-      })
+      console.log("HTTP and HTTPS servers closed. Asking process to exit.");
+      process.exit()
     });
   });
 }

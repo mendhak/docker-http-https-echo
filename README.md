@@ -203,27 +203,17 @@ The output will be 'cauliflower'.
 
 ## Client certificate details (mTLS)
 
-There's also an HTTPS server that requests client certificates (also known as mTLS), listening on port 8444 by default. 
+If you pass a client certificate, then the details about that certificate can be echoed back in the response body. 
+
+For example, invoke using curl, passing a certificate and key.  The client certificate will not be validated.  
 
 ```bash
-docker run -p 8444:8444 --rm -t mendhak/http-https-echo:25
-```
-
-You can then call it with curl passing a certificate and key.  The client certificate will not be validated.  
-
-```bash
-curl -k --cert cert.pem --key privkey.pem  https://localhost:8444/
+curl -k --cert cert.pem --key privkey.pem  https://localhost:8443/
 ```
 
 The response body will contain details about the client certificate passed in.  
 
-You can change the port by using the `HTTPS_MTLS_PORT` environment variable. 
-
-```bash
-docker run -e HTTPS_MTLS_PORT=3333 -p 3333:3333 --rm -t mendhak/http-https-echo:25
-```
-
-If you browse to https://localhost:8444/ in Firefox, you should get prompted to supply a client certificate as long as you have [an imported certificate by the same issuer as the server](https://superuser.com/questions/1043415/firefox-doesnt-ask-me-for-a-certificate-when-visiting-a-site-that-needs-one).  If you need browser prompting to work,  you'll need to follow the 'use your own certificates' section.  
+If you browse to https://localhost:8443/ in Firefox, you won't get prompted to supply a client certificate unless you have [an imported certificate by the same issuer as the server](https://superuser.com/questions/1043415/firefox-doesnt-ask-me-for-a-certificate-when-visiting-a-site-that-needs-one). If you need browser prompting to work,  you'll need to follow the 'use your own certificates' section.  
 
 
 ## Output

@@ -328,9 +328,9 @@ message " Check that mTLS server responds with client certificate details"
 # Might as well just reuse any cert
 cp ../generate-cert.sh .
 bash generate-cert.sh
-docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -p 8444:8444 -t mendhak/http-https-echo
+docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
 sleep 5
-COMMON_NAME="$(curl -sk --cert cert.pem --key privkey.pem  https://localhost:8444/ | jq -r  '.clientCertificate.subject.CN')"
+COMMON_NAME="$(curl -sk --cert cert.pem --key privkey.pem  https://localhost:8443/ | jq -r  '.clientCertificate.subject.CN')"
 if [ "$COMMON_NAME" == "my.example.com" ]
 then
     passed "Client certificate details are present in the output"
@@ -339,11 +339,11 @@ else
     exit 1
 fi
 
-message " Check that HTTPS server (non-MTLS) does not have any client certificate details"
-CLIENT_CERT="$(curl -sk --cert cert.pem --key privkey.pem  https://localhost:8443/ | jq -r  '.clientCertificate')"
+message " Check if certificate is not passed, then client certificate details are empty"
+CLIENT_CERT="$(curl -sk https://localhost:8443/ | jq -r  '.clientCertificate')"
 if [ "$CLIENT_CERT" == "{}" ]
 then
-    passed "Client certificate details are not present in regular HTTPS server"
+    passed "Client certificate details are not present in the response"
 else
     failed "Client certificate details found in output? ${CLIENT_CERT}"
     exit 1
