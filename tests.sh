@@ -362,6 +362,38 @@ fi
 message " Stop containers "
 docker stop http-echo-tests
 
+message " Check that environment variables returned in response if enabled"
+docker run -d --rm -e ECHO_INCLUDE_ENV_VARS=1 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
+sleep 5
+RESPONSE_BODY="$(curl -sk https://localhost:8443/ | jq -r  '.env.ECHO_INCLUDE_ENV_VARS')"
+
+if [ "$RESPONSE_BODY" == "1" ]
+then
+    passed "Environment variables present in the output"
+else
+    failed "Client certificate details found in output? ${RESPONSE_BODY}"
+    exit 1
+fi
+
+message " Stop containers "
+docker stop http-echo-tests
+
+message " Check that environment variables are not present in response by default"
+docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
+sleep 5
+RESPONSE_BODY_ENV_CHECK="$(curl -sk https://localhost:8443/ | jq 'has("env")')"
+
+if [ "$RESPONSE_BODY_ENV_CHECK" == "false" ]
+then
+    passed "Environment variables not present in the output by default"
+else
+    failed "Environment variables found in output?"
+    exit 1
+fi
+
+message " Stop containers "
+docker stop http-echo-tests
+
 popd
 rm -rf testarea
 message "DONE"

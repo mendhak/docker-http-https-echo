@@ -51,6 +51,9 @@ app.all('*', (req, res) => {
     echo.clientCertificate = req.socket.getPeerCertificate();
   }
   
+  if(process.env.ECHO_INCLUDE_ENV_VARS){
+    echo.env = process.env;
+  }
 
   if(req.is('application/json')){
     echo.json = JSON.parse(req.body)
