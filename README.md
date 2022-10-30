@@ -201,11 +201,11 @@ curl -s -k -X POST -d 'cauliflower' http://localhost:8080/a/b/c?response_body_on
 
 The output will be 'cauliflower'. 
 
-## Client certificate details (mTLS)
+## Client certificate details (mTLS) in the response
 
-If you pass a client certificate, then the details about that certificate can be echoed back in the response body. 
+If you pass a client certificate, then the details about that certificate can be echoed back in the response body. The client certificate will not be validated.  
 
-For example, invoke using curl, passing a certificate and key.  The client certificate will not be validated.  
+For example, invoke using curl, passing a certificate and key.  
 
 ```bash
 curl -k --cert cert.pem --key privkey.pem  https://localhost:8443/
@@ -213,7 +213,11 @@ curl -k --cert cert.pem --key privkey.pem  https://localhost:8443/
 
 The response body will contain details about the client certificate passed in.  
 
-If you browse to https://localhost:8443/ in Firefox, you won't get prompted to supply a client certificate unless you have [an imported certificate by the same issuer as the server](https://superuser.com/questions/1043415/firefox-doesnt-ask-me-for-a-certificate-when-visiting-a-site-that-needs-one). If you need browser prompting to work,  you'll need to follow the 'use your own certificates' section.  
+If you browse to https://localhost:8443/ in Firefox, you won't get prompted to supply a client certificate unless you have [an imported certificate by the same issuer as the server](https://superuser.com/questions/1043415/firefox-doesnt-ask-me-for-a-certificate-when-visiting-a-site-that-needs-one). If you need browser prompting to work, you'll need to follow the 'use your own certificates' section.  Firefox needs the imported certificate to be in a PKCS12 format, so if you have a certificate and key already, you can combine them using 
+
+```bash
+openssl pkcs12 -export -in cert.pem -inkey privkey.pem -out certpkcs12.pfx
+```
 
 
 ## Output
