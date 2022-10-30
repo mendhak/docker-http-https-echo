@@ -3,9 +3,11 @@ my-http-listener:
     environment: 
         - HTTP_PORT=8888
         - HTTPS_PORT=9999
+        - HTTPS_MTLS_PORT=10101
     ports:
         - "8080:8888"
         - "8443:9999"
+        - "8444:10101"
     # volumes:
     #     - /etc/ssl/certs/ssl-cert-snakeoil.pem:/app/fullchain.pem
     #     - /etc/ssl/private/ssl-cert-snakeoil.key:/app/privkey.pem
