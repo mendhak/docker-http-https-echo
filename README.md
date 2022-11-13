@@ -14,6 +14,26 @@ This image is executed as non root by default and is fully compliant with Kubern
 
 Please do not use the `:latest` tag as it will break without warning, use a specific version instead.
 
+
+- [Basic Usage](#basic-usage)
+- [Choose your ports](#choose-your-ports)
+- [Use your own certificates](#use-your-own-certificates)
+- [Decode JWT header](#decode-jwt-header)
+- [Disable ExpressJS log lines](#disable-expressjs-log-lines)
+- [Do not log specific path](#do-not-log-specific-path)
+- [JSON payloads and JSON output](#json-payloads-and-json-output)
+- [Send an empty response](#send-an-empty-response)
+- [Custom status code](#custom-status-code)
+- [Set response Content-Type](#set-response-content-type)
+- [Add a delay before response](#add-a-delay-before-response)
+- [Only return body in the response](#only-return-body-in-the-response)
+- [Include environment variables in the response](#include-environment-variables-in-the-response)
+- [Client certificate details (mTLS) in the response](#client-certificate-details--mtls--in-the-response)
+- [Output](#output)
+- [Building](#building)
+- [Changelog](#changelog)
+
+
 ## Basic Usage
 
 Run with Docker
