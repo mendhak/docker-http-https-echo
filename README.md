@@ -38,7 +38,7 @@ Please do not use the `:latest` tag as it will break without warning, use a spec
 
 Run with Docker
 
-    docker run -p 8080:8080 -p 8443:8443 --rm -t mendhak/http-https-echo:26
+    docker run -p 8080:8080 -p 8443:8443 --rm -t mendhak/http-https-echo:27
 
 Or run with Docker Compose
 
@@ -55,13 +55,13 @@ You can choose a different internal port instead of 8080 and 8443 with the `HTTP
 
 In this example I'm setting http to listen on 8888, and https to listen on 9999.
 
-     docker run -e HTTP_PORT=8888 -e HTTPS_PORT=9999 -p 8080:8888 -p 8443:9999 --rm -t mendhak/http-https-echo:26
+     docker run -e HTTP_PORT=8888 -e HTTPS_PORT=9999 -p 8080:8888 -p 8443:9999 --rm -t mendhak/http-https-echo:27
 
 
 With docker compose, this would be:
 
     my-http-listener:
-        image: mendhak/http-https-echo:26
+        image: mendhak/http-https-echo:27
         environment:
             - HTTP_PORT=8888
             - HTTPS_PORT=9999
@@ -75,7 +75,7 @@ With docker compose, this would be:
 Use volume mounting to substitute the certificate and private key with your own. This example uses the snakeoil cert.
 
     my-http-listener:
-        image: mendhak/http-https-echo:26
+        image: mendhak/http-https-echo:27
         ports:
             - "8080:8080"
             - "8443:8443"
@@ -89,7 +89,7 @@ Use volume mounting to substitute the certificate and private key with your own.
 
 If you specify the header that contains the JWT, the echo output will contain the decoded JWT.  Use the `JWT_HEADER` environment variable for this.
 
-    docker run -e JWT_HEADER=Authentication -p 8080:8080 -p 8443:8443 --rm -it mendhak/http-https-echo:26
+    docker run -e JWT_HEADER=Authentication -p 8080:8080 -p 8443:8443 --rm -it mendhak/http-https-echo:27
 
 
 Now make your request with `Authentication: eyJ...` header (it should also work with the `Authentication: Bearer eyJ...` schema too):
@@ -102,7 +102,7 @@ And in the output you should see a `jwt` section.
 
 In the log output set the environment variable `DISABLE_REQUEST_LOGS` to true, to disable the specific ExpressJS request log lines. The ones like `::ffff:172.17.0.1 - - [03/Jan/2022:21:31:51 +0000] "GET /xyz HTTP/1.1" 200 423 "-" "curl/7.68.0"`.  The JSON output will still appear.
 
-    docker run --rm -e DISABLE_REQUEST_LOGS=true --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:26
+    docker run --rm -e DISABLE_REQUEST_LOGS=true --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:27
 
 
 ## Do not log specific path
@@ -110,13 +110,13 @@ In the log output set the environment variable `DISABLE_REQUEST_LOGS` to true, t
 Set the environment variable `LOG_IGNORE_PATH` to a path you would like to exclude from verbose logging to stdout.
 This can help reduce noise from healthchecks in orchestration/infrastructure like Swarm, Kubernetes, ALBs, etc.
 
-     docker run -e LOG_IGNORE_PATH=/ping -p 8080:8080 -p 8443:8443 --rm -t mendhak/http-https-echo:26
+     docker run -e LOG_IGNORE_PATH=/ping -p 8080:8080 -p 8443:8443 --rm -t mendhak/http-https-echo:27
 
 
 With docker compose, this would be:
 
     my-http-listener:
-        image: mendhak/http-https-echo:26
+        image: mendhak/http-https-echo:27
         environment:
             - LOG_IGNORE_PATH=/ping
         ports:
@@ -147,7 +147,7 @@ Will contain a `json` property in the response/output.
 You can disable the JSON output in the response by setting the environment variable `ECHO_BACK_TO_CLIENT`. For example,
 
 ```bash
-docker run -e ECHO_BACK_TO_CLIENT=false -p 8080:8080 -p 8443:8443 --rm -t mendhak/http-https-echo:26
+docker run -e ECHO_BACK_TO_CLIENT=false -p 8080:8080 -p 8443:8443 --rm -t mendhak/http-https-echo:27
 ```
 
 ## Custom status code
@@ -228,7 +228,7 @@ You can have environment variables (that are visible to the echo server's proces
 Pass the `ECHO_INCLUDE_ENV_VARS=1` environment variable in. 
 
 ```bash
-docker run -d --rm -e ECHO_INCLUDE_ENV_VARS=1 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:26
+docker run -d --rm -e ECHO_INCLUDE_ENV_VARS=1 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:27
 ```
 
 Then do a normal request via curl or browser, and you will see the `env` property in the response body.  

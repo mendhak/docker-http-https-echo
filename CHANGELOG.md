@@ -1,4 +1,7 @@
-## Version `26` - 2022-xx-xx
+## Version `27` - 2022-11-24
+* Added some `org.opencontainers.image` labels to the Docker image
+
+## Version `26` - 2022-10-30
 
 * Environment variable `MTLS_ENABLE=1` will show details of the client certificate passed in the response body
 * Environment variable `ECHO_INCLUDE_ENV_VARS=1` will include the container (or script's) environment variables in the response body. 
