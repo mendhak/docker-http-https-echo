@@ -325,13 +325,15 @@ message " Stop containers "
 docker stop http-echo-tests
 
 message " Check that mTLS server responds with client certificate details"
-# Might as well just reuse any cert
-cp ../generate-cert.sh .
-bash generate-cert.sh
+# Generate a new self signed cert locally
+openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes -keyout privkey.pem -out fullchain.pem \
+       -subj "/CN=client.example.net" \
+       -addext "subjectAltName=DNS:client.example.net"
 docker run -d --rm -e MTLS_ENABLE=1 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
 sleep 5
-COMMON_NAME="$(curl -sk --cert cert.pem --key privkey.pem  https://localhost:8443/ | jq -r  '.clientCertificate.subject.CN')"
-if [ "$COMMON_NAME" == "my.example.com" ]
+COMMON_NAME="$(curl -sk --cert fullchain.pem --key privkey.pem  https://localhost:8443/ | jq -r  '.clientCertificate.subject.CN')"
+SAN="$(curl -sk --cert fullchain.pem --key privkey.pem  https://localhost:8443/ | jq -r  '.clientCertificate.subjectaltname')"
+if [ "$COMMON_NAME" == "client.example.net" ] && [ "$SAN" == "DNS:client.example.net" ]
 then
     passed "Client certificate details are present in the output"
 else

@@ -14,7 +14,7 @@ RUN set -ex \
   && apk del openssl \
   && rm -rf /var/cache/apk/* \
   # Delete unnecessary files
-  && rm package* generate-cert.sh \
+  && rm package* \
   # Correct User's file access
   && chown -R node:node /app \
   && chmod +r /app/privkey.pem
