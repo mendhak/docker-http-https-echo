@@ -1,3 +1,6 @@
+## Version `28` - 2022-12-02
+* Certificate now includes Subject Alternative Names as well as Common Name
+
 ## Version `27` - 2022-11-24
 * Added some `org.opencontainers.image` labels to the Docker image
 
