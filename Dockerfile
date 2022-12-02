@@ -9,7 +9,7 @@ RUN set -ex \
   # Generate SSL-certificate (for HTTPS)
   && apk --no-cache add openssl \
   && openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes -keyout privkey.pem -out fullchain.pem \
-       -subj "/C=GB/ST=London/L=London/O=Mendhak/CN=Echo" \
+       -subj "/C=GB/ST=London/L=London/O=Mendhak/CN=my.example.com" \
        -addext "subjectAltName=DNS:my.example.com,DNS:my.example.net,IP:192.168.50.108" \
   && apk del openssl \
   && rm -rf /var/cache/apk/* \
