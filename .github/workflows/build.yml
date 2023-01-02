@@ -3,7 +3,13 @@
 name: Build
 
 # Controls when the action will run. 
-on: [push, pull_request, workflow_dispatch]
+on: 
+  push:
+    branches-ignore: "dependabot/**"
+  pull_request: 
+    paths-ignore:
+      - '**.md'
+  workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
