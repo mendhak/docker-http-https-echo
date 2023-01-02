@@ -22,6 +22,7 @@ Please do not use the `:latest` tag as it will break without warning, use a spec
 - [Disable ExpressJS log lines](#disable-expressjs-log-lines)
 - [Do not log specific path](#do-not-log-specific-path)
 - [JSON payloads and JSON output](#json-payloads-and-json-output)
+- [No newlines](#no-newlines)
 - [Send an empty response](#send-an-empty-response)
 - [Custom status code](#custom-status-code)
 - [Set response Content-Type](#set-response-content-type)
