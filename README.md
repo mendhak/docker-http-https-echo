@@ -142,6 +142,14 @@ Will contain a `json` property in the response/output.
         }
     }
 
+## No newlines
+
+You can disable new lines in the log output by setting the environment variable `LOG_WITHOUT_NEWLINE`. For example,
+
+```bash
+docker run -e LOG_WITHOUT_NEWLINE=true -p 8080:8080 -p 8443:8443 --rm -t mendhak/http-https-echo:28
+```
+
 ## Send an empty response
 
 You can disable the JSON output in the response by setting the environment variable `ECHO_BACK_TO_CLIENT`. For example,
