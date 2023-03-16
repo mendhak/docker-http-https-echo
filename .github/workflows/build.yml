@@ -2,11 +2,12 @@
 
 name: Build
 
-# Controls when the action will run. 
-on: 
+# Controls when the action will run.
+on:
   push:
-    branches-ignore: "dependabot/**"
-  pull_request: 
+    branches-ignore:
+      - "dependabot/**"
+  pull_request:
     paths-ignore:
       - '**.md'
   workflow_dispatch:
@@ -21,13 +22,13 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
 
       - name: Inspect builder
         run: |
@@ -37,22 +38,34 @@ jobs:
           echo "Flags:     ${{ steps.buildx.outputs.flags }}"
           echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
 
-      - name: Build the image multiplatform
-        run: docker buildx build --output "type=image,push=false" --platform linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/ppc64le,linux/s390x  --tag mendhak/http-https-echo:latest --file ./Dockerfile .
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            mendhak/http-https-echo
+
+      - name: Build the image multi-platform
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/ppc64le,linux/s390x
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
       - name: Build the image single platform and run tests
         run: ./tests.sh
-      
+
       - name: Scan the image
         id: scan
-        uses: anchore/scan-action@v2
+        uses: anchore/scan-action@v3
         with:
           image: "mendhak/http-https-echo:latest"
           debug: false
           acs-report-enable: true
+
       - name: upload Anchore scan SARIF report
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: ${{ steps.scan.outputs.sarif }}
-
-
