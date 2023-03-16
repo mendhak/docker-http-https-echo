@@ -1,3 +1,6 @@
+## Version `29` - 2023-03-16
+* Publishing this image to Github Container Registry. Available at `docker pull ghcr.io/mendhak/http-https-echo:latest`
+
 ## Version `28` - 2022-12-02
 * Certificate now includes Subject Alternative Names as well as Common Name
 
