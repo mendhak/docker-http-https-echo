@@ -364,6 +364,39 @@ fi
 message " Stop containers "
 docker stop http-echo-tests
 
+message " Check that SSL certificate and private key are loaded from custom location"
+cert_common_name="server.example.net"
+https_cert_file="$(pwd)/server_fullchain.pem"
+https_key_file="$(pwd)/server_privkey.pem"
+# Generate a new self signed cert locally
+openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes -keyout "${https_key_file}" -out "${https_cert_file}" \
+       -subj "/CN=${cert_common_name}" \
+       -addext "subjectAltName=DNS:${cert_common_name}"
+chmod a+r "${https_cert_file}"
+chmod a+r "${https_key_file}"
+container_https_cert_file="/test/tls.crt"
+container_https_key_file="/test/tls.key"
+docker run -d --rm \
+  -v "${https_cert_file}:${container_https_cert_file}:ro,z" \
+  -e HTTPS_CERT_FILE="${container_https_cert_file}" \
+  -v "${https_key_file}:${container_https_key_file}:ro,z" \
+  -e HTTPS_KEY_FILE="${container_https_key_file}" \
+  --name http-echo-tests -p 8443:8443 -t mendhak/http-https-echo
+sleep 5
+
+REQUEST_WITH_STATUS_CODE="$(curl -s --cacert "$(pwd)/server_fullchain.pem" -o /dev/null -w "%{http_code}" \
+  --resolve "${cert_common_name}:8443:127.0.0.1" "https://${cert_common_name}:8443/hello-world")"
+if [ "${REQUEST_WITH_STATUS_CODE}" = 200 ]
+then
+    passed "Server certificate and private key are loaded from configured custom location"
+else
+    failed "HTTPS request failed"
+    exit 1
+fi
+
+message " Stop containers "
+docker stop http-echo-tests
+
 message " Check that environment variables returned in response if enabled"
 docker run -d --rm -e ECHO_INCLUDE_ENV_VARS=1 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
 sleep 5

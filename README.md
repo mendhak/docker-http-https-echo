@@ -86,6 +86,7 @@ Use volume mounting to substitute the certificate and private key with your own.
             - /etc/ssl/certs/ssl-cert-snakeoil.pem:/app/fullchain.pem
             - /etc/ssl/private/ssl-cert-snakeoil.key:/app/privkey.pem
 
+`/app/fullchain.pem` and `/app/privkey.pem` paths can be changed - use `HTTPS_CERT_FILE` and `HTTPS_KEY_FILE` environment variables to define location of existing certificate and private key inside container.
 
 
 ## Decode JWT header
