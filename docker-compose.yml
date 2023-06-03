@@ -2,13 +2,10 @@ version: '3'
 services:
 
     my-http-listener:
-        image: mendhak/http-https-echo:29
+        image: mendhak/http-https-echo:30
         environment: 
             - HTTP_PORT=8888
             - HTTPS_PORT=9999
         ports:
             - "8080:8888"
             - "8443:9999"
-        # volumes:
-        #     - /etc/ssl/certs/ssl-cert-snakeoil.pem:/app/fullchain.pem
-        #     - /etc/ssl/private/ssl-cert-snakeoil.key:/app/privkey.pem

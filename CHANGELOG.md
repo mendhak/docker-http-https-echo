@@ -1,3 +1,6 @@
+## Version `30` - 2023-06-03
+* Use `HTTPS_CERT_FILE` and `HTTPS_KEY_FILE` to specify path to a certificate. 
+
 ## Version `29` - 2023-03-16
 * Publishing this image to Github Container Registry. Available at `docker pull ghcr.io/mendhak/http-https-echo:latest`
 
