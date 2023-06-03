@@ -400,7 +400,7 @@ if [ "${REQUEST_WITH_STATUS_CODE}" = 200 ]
 then
     passed "Server certificate and private key are loaded from configured custom location"
 else
-    failed "HTTPS request failed"
+    failed "Custom certificate location test failed"
     exit 1
 fi
 
