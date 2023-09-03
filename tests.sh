@@ -95,27 +95,27 @@ fi
 
 
 REQUEST_WITH_SLEEP_MS=$(curl -o /dev/null -Ss -H "x-set-response-delay-ms: 6000" -k https://localhost:8443/ -w '%{time_total}')
-if [[ $(echo "$REQUEST_WITH_SLEEP_MS>5" | bc -l) == 1 ]]; then 
+if [[ $(echo "$REQUEST_WITH_SLEEP_MS>5" | bc -l) == 1 ]]; then
     passed "Request header with response delay passed"
-else 
+else
     failed "Request header with response delay failed"
     echo $REQUEST_WITH_SLEEP_MS
     exit 1
 fi
 
 REQUEST_WITH_SLEEP_MS=$(curl -o /dev/null -Ss -k https://localhost:8443/sleep/test?x-set-response-delay-ms=5000 -w '%{time_total}')
-if [[ $(echo "$REQUEST_WITH_SLEEP_MS>4" | bc -l) == 1 ]]; then 
+if [[ $(echo "$REQUEST_WITH_SLEEP_MS>4" | bc -l) == 1 ]]; then
     passed "Request query with response delay passed"
-else 
+else
     failed "Request query with response delay failed"
     echo $REQUEST_WITH_SLEEP_MS
     exit 1
 fi
 
 REQUEST_WITH_INVALID_SLEEP_MS=$(curl -o /dev/null -Ss -H "x-set-response-delay-ms: XXXX" -k https://localhost:8443/ -w '%{time_total}')
-if [[ $(echo "$REQUEST_WITH_INVALID_SLEEP_MS<2" | bc -l) == 1 ]]; then 
+if [[ $(echo "$REQUEST_WITH_INVALID_SLEEP_MS<2" | bc -l) == 1 ]]; then
     passed "Request with invalid response delay passed"
-else 
+else
     failed "Request with invalid response delay failed"
     echo $REQUEST_WITH_INVALID_SLEEP_MS
     exit 1
@@ -435,6 +435,25 @@ then
     passed "Environment variables not present in the output by default"
 else
     failed "Environment variables found in output?"
+    exit 1
+fi
+
+message " Stop containers "
+docker stop http-echo-tests
+sleep 5
+
+message " Start container with PROMETHEUS "
+docker run -d --rm -e --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
+sleep 5
+curl -s -k -X POST -d "tiramisu" https://localhost:8443/ > /dev/null
+METRICS_CHECK="$(curl -sk http://localhost:8080/metrics | grep http_request_duration_seconds_count | grep GET | cut -d' ' -f2)"
+
+if [ "$METRICS_CHECK" == "1" ]
+then
+    passed "PROMETHEUS metrics are working"
+else
+    failed "PROMETHEUS metrics are not working"
+    docker logs http-echo-tests
     exit 1
 fi
 

@@ -3,13 +3,12 @@
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/mendhak/docker-http-https-echo/build.yml?color=darkgreen&style=for-the-badge&branch=master)](https://github.com/mendhak/docker-http-https-echo/actions?query=workflow%3ABuild)
 
 
-
 `mendhak/http-https-echo` is a Docker image that can echo various HTTP request properties back to client in the response, as well as in the Docker container logs.
 It comes with various options that can manipulate the response output, see the table of contents for a full list.
 
 ![browser](https://raw.githubusercontent.com/mendhak/docker-http-https-echo/master/screenshots/screenshot.png)
 
-The image is available on [Docker Hub](https://hub.docker.com/r/mendhak/http-https-echo): `mendhak/http-https-echo:30`  
+The image is available on [Docker Hub](https://hub.docker.com/r/mendhak/http-https-echo): `mendhak/http-https-echo:30`
 The image is available on [Github Container Registry](https://github.com/mendhak/docker-http-https-echo/pkgs/container/http-https-echo): `ghcr.io/mendhak/http-https-echo:30`
 
 Please do not use the `:latest` tag as it will break without warning, use a specific version instead.
@@ -31,8 +30,11 @@ This image is executed as non root by default and is fully compliant with Kubern
 - [Add a delay before response](#add-a-delay-before-response)
 - [Only return body in the response](#only-return-body-in-the-response)
 - [Include environment variables in the response](#include-environment-variables-in-the-response)
-- [Client certificate details (mTLS) in the response](#client-certificate-details--mtls--in-the-response)
+- [Client certificate details (mTLS) in the response](#client-certificate-details-mtls-in-the-response)
+- [Prometheus Metrics](#prometheus-metrics)
 - [Output](#output)
+    - [Curl output](#curl-output)
+    - [`docker logs` output](#docker-logs-output)
 - [Building](#building)
 - [Changelog](#changelog)
 
@@ -75,9 +77,9 @@ With docker compose, this would be:
 
 ## Use your own certificates
 
-The certificates are at `/app/fullchain.pem` and `/app/privkey.pem`. 
+The certificates are at `/app/fullchain.pem` and `/app/privkey.pem`.
 
-You can use volume mounting to substitute the certificate and private key with your own. 
+You can use volume mounting to substitute the certificate and private key with your own.
 
     my-http-listener:
         image: mendhak/http-https-echo:30
@@ -166,7 +168,7 @@ docker run -e ECHO_BACK_TO_CLIENT=false -p 8080:8080 -p 8443:8443 --rm -t mendha
 
 ## Custom status code
 
-Use `x-set-response-status-code` to set a custom status code. 
+Use `x-set-response-status-code` to set a custom status code.
 
 You can send it as a header:
 
@@ -188,7 +190,7 @@ That will cause the reponse status code to be:
 
 ## Set response Content-Type
 
-Use `x-set-response-content-type` to set the Content-Type of the response.  
+Use `x-set-response-content-type` to set the Content-Type of the response.
 
 You can send it as a header:
 
@@ -211,7 +213,7 @@ This will cause the response content type to be:
 
 ## Add a delay before response
 
-Use `x-set-response-delay-ms` to set a custom delay in milliseconds.  This will allow you to simulate slow responses. 
+Use `x-set-response-delay-ms` to set a custom delay in milliseconds.  This will allow you to simulate slow responses.
 
 You can send it as a header:
 
@@ -219,7 +221,7 @@ You can send it as a header:
 curl -v -H "x-set-response-delay-ms: 6000" http://localhost:8080/
 ```
 
-You can send it as a querystring parameter: 
+You can send it as a querystring parameter:
 
 ```bash
 curl -v http://localhost:8080/some/path?x-set-response-delay-ms=6000
@@ -227,45 +229,60 @@ curl -v http://localhost:8080/some/path?x-set-response-delay-ms=6000
 
 ## Only return body in the response
 
-Use the querystring parameter, `response_body_only=true` to get just the request body in the response, none of the associated metadata. 
+Use the querystring parameter, `response_body_only=true` to get just the request body in the response, none of the associated metadata.
 
 ```bash
 curl -s -k -X POST -d 'cauliflower' http://localhost:8080/a/b/c?response_body_only=true
 ```
 
-The output will be 'cauliflower'. 
+The output will be 'cauliflower'.
 
 ## Include environment variables in the response
 
-You can have environment variables (that are visible to the echo server's process) added to the response body.  Because this could contain sensitive information, it is not a default behavior.  
+You can have environment variables (that are visible to the echo server's process) added to the response body.  Because this could contain sensitive information, it is not a default behavior.
 
-Pass the `ECHO_INCLUDE_ENV_VARS=1` environment variable in. 
+Pass the `ECHO_INCLUDE_ENV_VARS=1` environment variable in.
 
 ```bash
 docker run -d --rm -e ECHO_INCLUDE_ENV_VARS=1 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:30
 ```
 
-Then do a normal request via curl or browser, and you will see the `env` property in the response body.  
+Then do a normal request via curl or browser, and you will see the `env` property in the response body.
 
 
 ## Client certificate details (mTLS) in the response
 
-To get client certificate details in the response body, start the container with `MTLS_ENABLE=1` environment variable.  When passing a client certificate, the details about that certificate can be echoed back in the response body. The client certificate will not be validated.  
+To get client certificate details in the response body, start the container with `MTLS_ENABLE=1` environment variable.  When passing a client certificate, the details about that certificate can be echoed back in the response body. The client certificate will not be validated.
 
-For example, invoke using curl, passing a certificate and key.  
+For example, invoke using curl, passing a certificate and key.
 
 ```bash
 curl -k --cert cert.pem --key privkey.pem  https://localhost:8443/
 ```
 
-The response body will contain details about the client certificate passed in.  
+The response body will contain details about the client certificate passed in.
 
-If you browse to https://localhost:8443/ in Firefox, you won't get prompted to supply a client certificate unless you have [an imported certificate by the same issuer as the server](https://superuser.com/questions/1043415/firefox-doesnt-ask-me-for-a-certificate-when-visiting-a-site-that-needs-one). If you need browser prompting to work, you'll need to follow the 'use your own certificates' section.  Firefox needs the imported certificate to be in a PKCS12 format, so if you have a certificate and key already, you can combine them using 
+If you browse to https://localhost:8443/ in Firefox, you won't get prompted to supply a client certificate unless you have [an imported certificate by the same issuer as the server](https://superuser.com/questions/1043415/firefox-doesnt-ask-me-for-a-certificate-when-visiting-a-site-that-needs-one). If you need browser prompting to work, you'll need to follow the 'use your own certificates' section.  Firefox needs the imported certificate to be in a PKCS12 format, so if you have a certificate and key already, you can combine them using
 
 ```bash
 openssl pkcs12 -export -in cert.pem -inkey privkey.pem -out certpkcs12.pfx
 ```
 
+## Prometheus Metrics
+
+By default the server uses `express-prom-bundle` middleware to expose http performance
+metrics in `/metrics`.
+You can configure these metrics using the following variables:
+
+| Variable | Description | Default Value |
+| -------- | ----------- | ------------- |
+| PROMETHEUS_DISABLED    | Toggles off the prometheus middleware | false |
+| PROMETHEUS_WITH_PATH   | Partitions the metrics by the requested path | false |
+| PROMETHEUS_WITH_METHOD | Partitions the metrics by HTTP method | true |
+| PROMETHEUS_WITH_STATUS | Partitions the metrics by HTTP status | true |
+| PROMETHEUS_METRIC_TYPE | Sets the type of metric, histogram or summary | summary |
+
+> Please check the middleware [documentation](https://github.com/jochen-schweizer/express-prom-bundle#options) for more details.
 
 ## Output
 

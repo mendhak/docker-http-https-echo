@@ -1,16 +1,35 @@
-var express = require('express')
-const morgan = require('morgan');
-var http = require('http')
-var https = require('https')
-var app = express()
 const os = require('os');
 const jwt = require('jsonwebtoken');
-var concat = require('concat-stream');
+const http = require('http')
+const https = require('https')
+const morgan = require('morgan');
+const express = require('express')
+const concat = require('concat-stream');
 const { promisify } = require('util');
-const sleep = promisify(setTimeout);
+const promBundle = require("express-prom-bundle");
 
+const {
+  PROMETHEUS_DISABLED = false,
+  PROMETHEUS_WITH_PATH = false,
+  PROMETHEUS_WITH_METHOD = 'true',
+  PROMETHEUS_WITH_STATUS = 'true',
+  PROMETHEUS_METRIC_TYPE = 'summary',
+} = process.env
+
+const sleep = promisify(setTimeout);
+const metricsMiddleware = promBundle({
+  includePath: (PROMETHEUS_WITH_PATH == 'true'),
+  includeMethod: (PROMETHEUS_WITH_METHOD == 'true'),
+  includeStatusCode: (PROMETHEUS_WITH_STATUS == 'true'),
+  metricType: PROMETHEUS_METRIC_TYPE,
+});
+
+const app = express()
 app.set('json spaces', 2);
 app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
+if(PROMETHEUS_DISABLED !== 'true') {
+  app.use(metricsMiddleware);
+}
 
 if(process.env.DISABLE_REQUEST_LOGS !== 'true'){
   app.use(morgan('combined'));
@@ -48,11 +67,11 @@ app.all('*', (req, res) => {
   };
 
   //Add client certificate details to the output, if present
-  //This only works if `requestCert` is true when starting the server. 
+  //This only works if `requestCert` is true when starting the server.
   if(req.socket.getPeerCertificate){
     echo.clientCertificate = req.socket.getPeerCertificate();
   }
-  
+
   //Include visible environment variables
   if(process.env.ECHO_INCLUDE_ENV_VARS){
     echo.env = process.env;
@@ -91,15 +110,15 @@ app.all('*', (req, res) => {
     if(setResponseContentType){
       res.contentType(setResponseContentType);
     }
-    
+
     //Ability to send an empty response back
     if (process.env.ECHO_BACK_TO_CLIENT != undefined && process.env.ECHO_BACK_TO_CLIENT == "false"){
       res.end();
-    } 
+    }
     //Ability to send just the request body in the response, nothing else
     else if ("response_body_only" in req.query && req.query["response_body_only"] == "true") {
       res.send(req.body);
-    } 
+    }
     //Normal behavior, send everything back
     else {
       res.json(echo);
@@ -107,17 +126,17 @@ app.all('*', (req, res) => {
 
     //Certain paths can be ignored in the container logs, useful to reduce noise from healthchecks
     if (process.env.LOG_IGNORE_PATH != req.path) {
- 
+
       let spacer = 4;
       if(process.env.LOG_WITHOUT_NEWLINE){
         spacer = null;
       }
-  
+
       console.log(JSON.stringify(echo, null, spacer));
     }
   });
 
-  
+
 });
 
 let sslOpts = {
@@ -127,10 +146,10 @@ let sslOpts = {
 
 //Whether to enable the client certificate feature
 if(process.env.MTLS_ENABLE){
-    sslOpts = { 
-      requestCert: true, 
-      rejectUnauthorized: false, 
-      ...sslOpts 
+    sslOpts = {
+      requestCert: true,
+      rejectUnauthorized: false,
+      ...sslOpts
     }
 }
 
