@@ -1,3 +1,6 @@
+## Version `31` - 2023-12-03
+* Use `PROMETHEUS_ENABLED` which enables a Prometheus metrics endpoint at /metrics
+
 ## Version `30` - 2023-06-03
 * Use `HTTPS_CERT_FILE` and `HTTPS_KEY_FILE` to specify path to a certificate. 
 
