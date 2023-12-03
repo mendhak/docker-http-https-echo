@@ -57,3 +57,4 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          output: type=image,name=target,annotation-index.org.opencontainers.image.description=Docker image that echoes request data as JSON, listens on HTTP/S, with various extra features, useful for debugging.
