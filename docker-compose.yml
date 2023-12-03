@@ -1,11 +1,16 @@
 version: '3'
 services:
-
     my-http-listener:
         image: mendhak/http-https-echo:30
-        environment: 
+        environment:
             - HTTP_PORT=8888
             - HTTPS_PORT=9999
+            - PROMETHEUS_ENABLED=true
+            - PROMETHEUS_METRICS_PATH=/metrics
+            - PROMETHEUS_WITH_PATH=false
+            - PROMETHEUS_WITH_METHOD=true
+            - PROMETHEUS_WITH_STATUS=true
+            - PROMETHEUS_METRIC_TYPE=summary
         ports:
             - "8080:8888"
             - "8443:9999"
