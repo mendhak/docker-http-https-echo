@@ -6,7 +6,7 @@
 `mendhak/http-https-echo` is a Docker image that can echo various HTTP request properties back to client in the response, as well as in the Docker container logs.
 It comes with various options that can manipulate the response output, see the table of contents for a full list.
 
-![browser](https://raw.githubusercontent.com/mendhak/docker-http-https-echo/master/screenshots/screenshot.png)
+![browser](./screenshots/screenshot.png)
 
 The image is available on [Docker Hub](https://hub.docker.com/r/mendhak/http-https-echo): `mendhak/http-https-echo:30`
 The image is available on [Github Container Registry](https://github.com/mendhak/docker-http-https-echo/pkgs/container/http-https-echo): `ghcr.io/mendhak/http-https-echo:30`
@@ -32,7 +32,7 @@ This image is executed as non root by default and is fully compliant with Kubern
 - [Include environment variables in the response](#include-environment-variables-in-the-response)
 - [Client certificate details (mTLS) in the response](#client-certificate-details-mtls-in-the-response)
 - [Prometheus Metrics](#prometheus-metrics)
-- [Output](#output)
+- [Screenshots](#screenshots)
 - [Building](#building)
 - [Changelog](#changelog)
 
@@ -283,15 +283,15 @@ You can configure these metrics using the following variables:
 
 > Please check the middleware [documentation](https://github.com/jochen-schweizer/express-prom-bundle#options) for more details.
 
-## Output
+## Screenshots
 
 #### Curl output
 
-![curl](https://raw.githubusercontent.com/mendhak/docker-http-https-echo/master/screenshots/screenshot2.png)
+![curl](./screenshots/screenshot2.png)
 
 #### `docker logs` output
 
-![dockerlogs](https://raw.githubusercontent.com/mendhak/docker-http-https-echo/master/screenshots/screenshot3.png)
+![dockerlogs](./screenshots/screenshot3.png)
 
 
 
