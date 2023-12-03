@@ -270,17 +270,18 @@ openssl pkcs12 -export -in cert.pem -inkey privkey.pem -out certpkcs12.pfx
 
 ## Prometheus Metrics
 
-By default the server uses `express-prom-bundle` middleware to expose http performance
-metrics in `/metrics`.
+To expose http performance metrics, set the `PROMETHEUS_ENABLED` environment variable to true, the metrics will be available at `/metrics`. This uses the [`express-prom-bundle`](https://github.com/jochen-schweizer/express-prom-bundle) middleware
+
 You can configure these metrics using the following variables:
 
-| Variable | Description | Default Value |
-| -------- | ----------- | ------------- |
-| PROMETHEUS_DISABLED    | Toggles off the prometheus middleware | false |
-| PROMETHEUS_WITH_PATH   | Partitions the metrics by the requested path | false |
-| PROMETHEUS_WITH_METHOD | Partitions the metrics by HTTP method | true |
-| PROMETHEUS_WITH_STATUS | Partitions the metrics by HTTP status | true |
-| PROMETHEUS_METRIC_TYPE | Sets the type of metric, histogram or summary | summary |
+| Variable                | Description                                   | Default Value |
+| ----------------------- | --------------------------------------------- | ------------- |
+| PROMETHEUS_ENABLED      | Toggles on the prometheus middleware          | false         |
+| PROMETHEUS_METRICS_PATH | The path at which the metrics will be visible | /metrics      |
+| PROMETHEUS_WITH_PATH    | Partitions the metrics by the requested path  | false         |
+| PROMETHEUS_WITH_METHOD  | Partitions the metrics by HTTP method         | true          |
+| PROMETHEUS_WITH_STATUS  | Partitions the metrics by HTTP status         | true          |
+| PROMETHEUS_METRIC_TYPE  | Sets the type of metric, histogram or summary | summary       |
 
 > Please check the middleware [documentation](https://github.com/jochen-schweizer/express-prom-bundle#options) for more details.
 

@@ -5,7 +5,8 @@ services:
         environment:
             - HTTP_PORT=8888
             - HTTPS_PORT=9999
-            - PROMETHEUS_DISABLED=false
+            - PROMETHEUS_ENABLED=true
+            - PROMETHEUS_METRICS_PATH=/metrics
             - PROMETHEUS_WITH_PATH=false
             - PROMETHEUS_WITH_METHOD=true
             - PROMETHEUS_WITH_STATUS=true

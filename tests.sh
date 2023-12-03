@@ -256,6 +256,7 @@ fi
 
 message " Stop containers "
 docker stop http-echo-tests
+sleep 5
 
 message " Start container with DISABLE_REQUEST_LOGS "
 docker run -d --rm -e DISABLE_REQUEST_LOGS=true --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
@@ -442,18 +443,39 @@ message " Stop containers "
 docker stop http-echo-tests
 sleep 5
 
-message " Start container with PROMETHEUS "
-docker run -d --rm -e --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
+message " Start container with PROMETHEUS disabled "
+docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
 sleep 5
 curl -s -k -X POST -d "tiramisu" https://localhost:8443/ > /dev/null
-METRICS_CHECK="$(curl -sk http://localhost:8080/metrics | grep http_request_duration_seconds_count | grep GET | cut -d' ' -f2)"
 
-if [ "$METRICS_CHECK" == "1" ]
+# grep for  http_request_duration_seconds_count ensure it is not present at /metric path
+
+METRICS_CHECK="$(curl -sk http://localhost:8080/metrics | grep -v http_request_duration_seconds_count )"
+
+if [[ "$METRICS_CHECK" == *"http_request_duration_seconds_count"* ]]
 then
-    passed "PROMETHEUS metrics are working"
+    failed "PROMETHEUS metrics are enabled"
+    exit 1
 else
-    failed "PROMETHEUS metrics are not working"
-    docker logs http-echo-tests
+    passed "PROMETHEUS metrics are disabled by default"
+fi
+
+message " Stop containers "
+docker stop http-echo-tests
+sleep 5
+
+message " Start container with PROMETHEUS enabled "
+docker run -d -e PROMETHEUS_ENABLED=true --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
+sleep 5
+curl -s -k -X POST -d "tiramisu" https://localhost:8443/ > /dev/null
+
+METRICS_CHECK="$(curl -sk http://localhost:8080/metrics | grep http_request_duration_seconds_count )"
+
+if [[ "$METRICS_CHECK" == *"http_request_duration_seconds_count"* ]]
+then
+    passed "PROMETHEUS metrics are enabled"
+else
+    failed "PROMETHEUS metrics are disabled"
     exit 1
 fi
 

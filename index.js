@@ -9,7 +9,8 @@ const { promisify } = require('util');
 const promBundle = require("express-prom-bundle");
 
 const {
-  PROMETHEUS_DISABLED = false,
+  PROMETHEUS_ENABLED = false,
+  PROMETHEUS_METRICS_PATH = '/metrics',
   PROMETHEUS_WITH_PATH = false,
   PROMETHEUS_WITH_METHOD = 'true',
   PROMETHEUS_WITH_STATUS = 'true',
@@ -18,6 +19,7 @@ const {
 
 const sleep = promisify(setTimeout);
 const metricsMiddleware = promBundle({
+  metricsPath: PROMETHEUS_METRICS_PATH,
   includePath: (PROMETHEUS_WITH_PATH == 'true'),
   includeMethod: (PROMETHEUS_WITH_METHOD == 'true'),
   includeStatusCode: (PROMETHEUS_WITH_STATUS == 'true'),
@@ -27,7 +29,8 @@ const metricsMiddleware = promBundle({
 const app = express()
 app.set('json spaces', 2);
 app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
-if(PROMETHEUS_DISABLED !== 'true') {
+
+if(PROMETHEUS_ENABLED === 'true') {
   app.use(metricsMiddleware);
 }
 
