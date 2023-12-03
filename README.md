@@ -33,8 +33,6 @@ This image is executed as non root by default and is fully compliant with Kubern
 - [Client certificate details (mTLS) in the response](#client-certificate-details-mtls-in-the-response)
 - [Prometheus Metrics](#prometheus-metrics)
 - [Output](#output)
-    - [Curl output](#curl-output)
-    - [`docker logs` output](#docker-logs-output)
 - [Building](#building)
 - [Changelog](#changelog)
 
