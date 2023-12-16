@@ -51,7 +51,6 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/ppc64le
           push: false
-          load: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
@@ -62,7 +61,7 @@ jobs:
         id: scan
         uses: anchore/scan-action@v3
         with:
-          image: ${{ steps.meta.outputs.tags }}
+          image: "lokman928/http-https-echo:latest"
           debug: false
           acs-report-enable: true
           severity-cutoff: critical
