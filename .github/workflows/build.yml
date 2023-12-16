@@ -43,7 +43,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: |
-            mendhak/http-https-echo
+            lokman928/http-https-echo
 
       - name: Build the image multi-platform
         uses: docker/build-push-action@v4
@@ -61,7 +61,7 @@ jobs:
         id: scan
         uses: anchore/scan-action@v3
         with:
-          image: "mendhak/http-https-echo:latest"
+          image: "lokman928/http-https-echo:latest"
           debug: false
           acs-report-enable: true
           severity-cutoff: critical

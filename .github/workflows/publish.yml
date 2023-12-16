@@ -34,20 +34,12 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      - name: Log in to GitHub Container registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Docker metadata
         id: meta
         uses: docker/metadata-action@v4
         with:
           images: |
-            mendhak/http-https-echo
-            ghcr.io/mendhak/http-https-echo
+            lokman928/http-https-echo
 
       - name: Build and push image
         uses: docker/build-push-action@v4
@@ -57,4 +49,4 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          output: type=image,name=target,annotation-index.org.opencontainers.image.description=Docker image that echoes request data as JSON, listens on HTTP/S, with various extra features, useful for debugging.
+          output: type=image,name=target,annotation-index.org.opencontainers.image.description=Fork from mendhak/http-https-echo with custom-make function.
