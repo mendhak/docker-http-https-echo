@@ -61,7 +61,7 @@ jobs:
         id: scan
         uses: anchore/scan-action@v3
         with:
-          image: "lokman928/http-https-echo:latest"
+          image: ${{ steps.meta.outputs.tags }}
           debug: false
           acs-report-enable: true
           severity-cutoff: critical
