@@ -131,11 +131,17 @@ app.all('*', (req, res) => {
     if (process.env.LOG_IGNORE_PATH != req.path) {
 
       let spacer = 4;
-      if(process.env.LOG_WITHOUT_NEWLINE){
+      if(process.env.LOG_WITHOUT_NEWLINE) {
         spacer = null;
       }
 
-      console.log(JSON.stringify(echo, null, spacer));
+      //Allow logging to standard error if the status code is a failure
+      let loggerFunction = console.log;
+      if (process.env.LOG_TO_STANDARD_ERROR === "true" && setResponseStatusCode >= 400 && setResponseStatusCode < 600) {
+        loggerFunction = console.error;
+      }
+
+      loggerFunction(JSON.stringify(echo, null, spacer));
     }
   });
 
