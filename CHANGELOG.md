@@ -1,3 +1,6 @@
+## Version `32` - `2024-03-28`
+* Update Express to 4.19.2 to address CVE-2024-29041
+
 ## Version `31` - 2023-12-03
 * Use `PROMETHEUS_ENABLED` which enables a Prometheus metrics endpoint at /metrics
 
