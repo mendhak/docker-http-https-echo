@@ -314,7 +314,7 @@ docker stop http-echo-tests
 sleep 5
 
 message " Check that container is running as user different that the user defined in image"
-IMAGE_USER="$(docker image inspect mendhak/http-https-echo -f '{{ .ContainerConfig.User }}')"
+IMAGE_USER="$(docker image inspect mendhak/http-https-echo -f '{{ .Config.User }}')"
 CONTAINER_USER="$((IMAGE_USER + 1000000))"
 docker run -d --name http-echo-tests --rm -u "${CONTAINER_USER}" -p 8080:8080 mendhak/http-https-echo
 sleep 5
