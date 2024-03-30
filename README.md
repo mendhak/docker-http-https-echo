@@ -257,7 +257,7 @@ CORS configuration can be further fine-tuned by using the following environment 
 - **`CORS_ALLOW_HEADERS`**: List of headers allowed.
 - **`CORS_ALLOW_CREDENTIALS`**: Comma-separated list of origin URLs from which the policy allows credentials to be sent.
 
-None of these can be set without setting the `CORS_ALLOW_ORIGIN` variable first. By default, they will all be missing when only the `CORS_ALLOW_ORIGIN` is set and need to be explicitly set.
+None of these CORS settings can be set without setting the `CORS_ALLOW_ORIGIN` first. By default, they will all be missing when only the `CORS_ALLOW_ORIGIN` is set and need to be explicitly specified alongside `CORS_ALLOW_ORIGIN`.
 
 
 ## Client certificate details (mTLS) in the response
