@@ -271,6 +271,26 @@ else
     exit 1
 fi
 
+message " Stop containers "
+docker stop http-echo-tests
+sleep 5
+
+message " Start container with CORS_CONFIG"
+docker run -d --rm \
+    -e CORS_ALLOW_ORIGIN="http://example.com" -e CORS_ALLOW_HEADERS="x-custom-test-header" \
+    --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
+sleep 5
+# Check if the expected CORS headers are present in the response
+if curl -s -i http://localhost:8080/ 2>&1 | grep -q -E \
+    "Access-Control-Allow-Headers: x-custom-test-header" &&
+    curl -s -i http://localhost:8080/ 2>&1 | grep -q -E \
+    "Access-Control-Allow-Origin: http://example.com"; then
+    passed "CORS_CONFIG expected CORS headers found in response"
+else
+    failed "CORS_CONFIG failed."
+    docker logs http-echo-tests
+    exit 1
+fi
 
 message " Stop containers "
 docker stop http-echo-tests
