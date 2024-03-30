@@ -30,6 +30,7 @@ This image is executed as non root by default and is fully compliant with Kubern
 - [Add a delay before response](#add-a-delay-before-response)
 - [Only return body in the response](#only-return-body-in-the-response)
 - [Include environment variables in the response](#include-environment-variables-in-the-response)
+- [Configuring CORS policy](#setting-corscross-origin-resource-sharing-headers-in-the-response) 
 - [Client certificate details (mTLS) in the response](#client-certificate-details-mtls-in-the-response)
 - [Prometheus Metrics](#prometheus-metrics)
 - [Screenshots](#screenshots)
