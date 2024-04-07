@@ -57,7 +57,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
       # Due to bug https://github.com/docker/buildx/issues/59, need to build for single platform, load, then run tests. 
-      - name: Build the image single platform and load it
+      - name: Build a test image single platform and load it
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -68,7 +68,7 @@ jobs:
           tags: "mendhak/http-https-echo:testing"
           labels: ${{ steps.meta.outputs.labels }}
 
-      - name: Build the image single platform and run tests
+      - name: Run tests using the test image
         run: ./tests.sh
 
       - name: Scan the image
