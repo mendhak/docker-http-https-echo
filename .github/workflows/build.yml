@@ -65,7 +65,7 @@ jobs:
           load: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          tags: "latest"
+          tags: "mendhak/http-https-echo:latest"
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Build the image single platform and run tests
