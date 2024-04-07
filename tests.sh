@@ -26,8 +26,19 @@ if ! [ -x "$(command -v jq)" ]; then
     sudo apt -y install jq
 fi
 
-message " Build image "
-docker build -t mendhak/http-https-echo:latest .
+message " Check if we're in Github Actions or local run "
+if [ -n "${GITHUB_ACTIONS:-}" ]; then
+    echo " Github Actions. Image should already be built."
+    docker images
+    if [ -z "$(docker images -q mendhak/http-https-echo:testing 2> /dev/null)" ]; then
+        echo "Docker image mendhak/http-https-echo:testing not found. Exiting."
+        exit 1
+    fi
+else
+    echo " Local run. Build image "
+    docker build -t mendhak/http-https-echo:testing .
+fi
+
 
 mkdir -p testarea
 pushd testarea
@@ -36,7 +47,7 @@ message " Cleaning up from previous test run "
 docker ps -aq --filter "name=http-echo-tests" | grep -q . && docker stop http-echo-tests && docker rm -f http-echo-tests
 
 message " Start container normally "
-docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
+docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
 sleep 5
 
 
@@ -149,7 +160,7 @@ docker stop http-echo-tests
 sleep 5
 
 message " Start container with different internal ports "
-docker run -d --rm -e HTTP_PORT=8888 -e HTTPS_PORT=9999 --name http-echo-tests -p 8080:8888 -p 8443:9999 -t mendhak/http-https-echo
+docker run -d --rm -e HTTP_PORT=8888 -e HTTPS_PORT=9999 --name http-echo-tests -p 8080:8888 -p 8443:9999 -t mendhak/http-https-echo:testing
 sleep 5
 
 message " Make http(s) request, and test the path, method and header. "
@@ -183,7 +194,7 @@ docker stop http-echo-tests
 sleep 5
 
 message " Start container with empty responses "
-docker run -d --rm -e ECHO_BACK_TO_CLIENT=false --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
+docker run -d --rm -e ECHO_BACK_TO_CLIENT=false --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
 sleep 5
 REQUEST=$(curl -s -k http://localhost:8080/a/b/c)
 if [[ -z ${REQUEST} ]]
@@ -200,7 +211,7 @@ docker stop http-echo-tests
 sleep 5
 
 message " Start container with response body only "
-docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
+docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
 sleep 5
 RESPONSE=$(curl -s -k -X POST -d 'cauliflower' http://localhost:8080/a/b/c?response_body_only=true)
 if [[ ${RESPONSE} == "cauliflower" ]]
@@ -218,7 +229,7 @@ docker stop http-echo-tests
 sleep 5
 
 message " Start container with JWT_HEADER "
-docker run -d --rm -e JWT_HEADER=Authentication --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
+docker run -d --rm -e JWT_HEADER=Authentication --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
 sleep 5
 
 REQUEST=$(curl -s -k -H "Authentication: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c" https://localhost:8443/ )
@@ -239,7 +250,7 @@ sleep 5
 
 
 message " Start container with LOG_IGNORE_PATH "
-docker run -d --rm -e LOG_IGNORE_PATH=/ping --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
+docker run -d --rm -e LOG_IGNORE_PATH=/ping --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
 sleep 5
 curl -s -k -X POST -d "banana" https://localhost:8443/ping > /dev/null
 
@@ -259,7 +270,7 @@ docker stop http-echo-tests
 sleep 5
 
 message " Start container with DISABLE_REQUEST_LOGS "
-docker run -d --rm -e DISABLE_REQUEST_LOGS=true --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
+docker run -d --rm -e DISABLE_REQUEST_LOGS=true --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
 sleep 5
 curl -s -k -X GET https://localhost:8443/strawberry > /dev/null
 if  [ $(docker logs http-echo-tests | grep -c "GET /strawberry HTTP/1.1") -eq 0 ]
@@ -278,7 +289,7 @@ sleep 5
 message " Start container with CORS_CONFIG"
 docker run -d --rm \
     -e CORS_ALLOW_ORIGIN="http://example.com" -e CORS_ALLOW_HEADERS="x-custom-test-header" \
-    --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
+    --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
 sleep 5
 # Check if the expected CORS headers are present in the response
 if curl -s -i http://localhost:8080/ 2>&1 | grep -q -E \
@@ -297,7 +308,7 @@ docker stop http-echo-tests
 sleep 5
 
 message " Start container with LOG_WITHOUT_NEWLINE "
-docker run -d --rm -e LOG_WITHOUT_NEWLINE=1 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
+docker run -d --rm -e LOG_WITHOUT_NEWLINE=1 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
 sleep 5
 curl -s -k -X POST -d "tiramisu" https://localhost:8443/ > /dev/null
 
@@ -317,7 +328,7 @@ docker stop http-echo-tests
 sleep 5
 
 message " Check that container is running as a NON ROOT USER by default"
-docker run -d --name http-echo-tests --rm mendhak/http-https-echo
+docker run -d --name http-echo-tests --rm mendhak/http-https-echo:testing
 
 WHOAMI=$(docker exec http-echo-tests whoami)
 
@@ -334,9 +345,9 @@ docker stop http-echo-tests
 sleep 5
 
 message " Check that container is running as user different that the user defined in image"
-IMAGE_USER="$(docker image inspect mendhak/http-https-echo -f '{{ .Config.User }}')"
+IMAGE_USER="$(docker image inspect mendhak/http-https-echo:testing -f '{{ .Config.User }}')"
 CONTAINER_USER="$((IMAGE_USER + 1000000))"
-docker run -d --name http-echo-tests --rm -u "${CONTAINER_USER}" -p 8080:8080 mendhak/http-https-echo
+docker run -d --name http-echo-tests --rm -u "${CONTAINER_USER}" -p 8080:8080 mendhak/http-https-echo:testing
 sleep 5
 curl -s http://localhost:8080 > /dev/null
 
@@ -359,7 +370,7 @@ message " Check that mTLS server responds with client certificate details"
 openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes -keyout privkey.pem -out fullchain.pem \
        -subj "/CN=client.example.net" \
        -addext "subjectAltName=DNS:client.example.net"
-docker run -d --rm -e MTLS_ENABLE=1 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
+docker run -d --rm -e MTLS_ENABLE=1 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
 sleep 5
 COMMON_NAME="$(curl -sk --cert fullchain.pem --key privkey.pem  https://localhost:8443/ | jq -r  '.clientCertificate.subject.CN')"
 SAN="$(curl -sk --cert fullchain.pem --key privkey.pem  https://localhost:8443/ | jq -r  '.clientCertificate.subjectaltname')"
@@ -412,7 +423,7 @@ docker run -d --rm \
   -e HTTPS_CERT_FILE="${container_https_cert_file}" \
   -v "${https_key_file}:${container_https_key_file}:ro,z" \
   -e HTTPS_KEY_FILE="${container_https_key_file}" \
-  --name http-echo-tests -p 8443:8443 -t mendhak/http-https-echo
+  --name http-echo-tests -p 8443:8443 -t mendhak/http-https-echo:testing
 sleep 5
 
 REQUEST_WITH_STATUS_CODE="$(curl -s --cacert "$(pwd)/server_fullchain.pem" -o /dev/null -w "%{http_code}" \
@@ -430,7 +441,7 @@ docker stop http-echo-tests
 sleep 5
 
 message " Check that environment variables returned in response if enabled"
-docker run -d --rm -e ECHO_INCLUDE_ENV_VARS=1 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
+docker run -d --rm -e ECHO_INCLUDE_ENV_VARS=1 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
 sleep 5
 RESPONSE_BODY="$(curl -sk https://localhost:8443/ | jq -r  '.env.ECHO_INCLUDE_ENV_VARS')"
 
@@ -447,7 +458,7 @@ docker stop http-echo-tests
 sleep 5
 
 message " Check that environment variables are not present in response by default"
-docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
+docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
 sleep 5
 RESPONSE_BODY_ENV_CHECK="$(curl -sk https://localhost:8443/ | jq 'has("env")')"
 
@@ -464,7 +475,7 @@ docker stop http-echo-tests
 sleep 5
 
 message " Start container with PROMETHEUS disabled "
-docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
+docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
 sleep 5
 curl -s -k -X POST -d "tiramisu" https://localhost:8443/ > /dev/null
 
@@ -485,7 +496,7 @@ docker stop http-echo-tests
 sleep 5
 
 message " Start container with PROMETHEUS enabled "
-docker run -d -e PROMETHEUS_ENABLED=true --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo
+docker run -d -e PROMETHEUS_ENABLED=true --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
 sleep 5
 curl -s -k -X POST -d "tiramisu" https://localhost:8443/ > /dev/null
 
