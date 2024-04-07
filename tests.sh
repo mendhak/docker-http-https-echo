@@ -26,6 +26,14 @@ if ! [ -x "$(command -v jq)" ]; then
     sudo apt -y install jq
 fi
 
+message " Check if we're in Github Actions "
+if [ -n "${GITHUB_ACTIONS}" ]; then
+    message " Running in Github Actions "
+fi
+
+message "List the docker images"
+docker images
+
 message " Build image "
 docker build -t mendhak/http-https-echo:latest .
 
