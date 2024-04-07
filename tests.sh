@@ -26,15 +26,16 @@ if ! [ -x "$(command -v jq)" ]; then
     sudo apt -y install jq
 fi
 
-message " Check if we're in Github Actions "
+message " Check if we're in Github Actions or local run "
 if [ -n "${GITHUB_ACTIONS:-}" ]; then
+    echo " Github Actions. Image should already be built."
     docker images
     if [ -z "$(docker images -q mendhak/http-https-echo:testing 2> /dev/null)" ]; then
         echo "Docker image mendhak/http-https-echo:testing not found. Exiting."
         exit 1
     fi
 else
-    message " Local run. Build image "
+    echo " Local run. Build image "
     docker build -t mendhak/http-https-echo:testing .
 fi
 
