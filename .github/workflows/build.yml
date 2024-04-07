@@ -57,6 +57,18 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
+      # Due to bug https://github.com/docker/buildx/issues/59, need to build for single platform, load, then run tests. 
+      - name: Build the image single platform and load it
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: "latest"
+          labels: ${{ steps.meta.outputs.labels }}
+
       - name: Build the image single platform and run tests
         run: ./tests.sh
 

@@ -28,14 +28,16 @@ fi
 
 message " Check if we're in Github Actions "
 if [ -n "${GITHUB_ACTIONS}" ]; then
-    message " Running in Github Actions "
+    docker images
+    if [ -z "$(docker images -q mendhak/http-https-echo:latest 2> /dev/null)" ]; then
+        echo "Docker image mendhak/http-https-echo:latest not found. Exiting."
+        exit 1
+    fi
+else
+    message " Local run. Build image "
+    docker build -t mendhak/http-https-echo:latest .
 fi
 
-message "List the docker images"
-docker images
-
-message " Build image "
-docker build -t mendhak/http-https-echo:latest .
 
 mkdir -p testarea
 pushd testarea
