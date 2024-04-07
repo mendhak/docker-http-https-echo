@@ -114,6 +114,20 @@ app.all('*', (req, res) => {
       res.contentType(setResponseContentType);
     }
 
+    //Set the CORS policy
+    if (process.env.CORS_ALLOW_ORIGIN){
+      res.header('Access-Control-Allow-Origin', process.env.CORS_ALLOW_ORIGIN);
+      if (process.env.CORS_ALLOW_METHODS) {
+        res.header('Access-Control-Allow-Methods', process.env.CORS_ALLOW_METHODS);
+      }
+      if (process.env.CORS_ALLOW_HEADERS) {
+        res.header('Access-Control-Allow-Headers', process.env.CORS_ALLOW_HEADERS);
+      }
+      if (process.env.CORS_ALLOW_CREDENTIALS) {
+        res.header('Access-Control-Allow-Credentials', process.env.CORS_ALLOW_CREDENTIALS);
+      }
+    }
+
     //Ability to send an empty response back
     if (process.env.ECHO_BACK_TO_CLIENT != undefined && process.env.ECHO_BACK_TO_CLIENT == "false"){
       res.end();

@@ -30,6 +30,7 @@ This image is executed as non root by default and is fully compliant with Kubern
 - [Add a delay before response](#add-a-delay-before-response)
 - [Only return body in the response](#only-return-body-in-the-response)
 - [Include environment variables in the response](#include-environment-variables-in-the-response)
+- [Configuring CORS policy](#setting-corscross-origin-resource-sharing-headers-in-the-response) 
 - [Client certificate details (mTLS) in the response](#client-certificate-details-mtls-in-the-response)
 - [Prometheus Metrics](#prometheus-metrics)
 - [Screenshots](#screenshots)
@@ -246,6 +247,17 @@ docker run -d --rm -e ECHO_INCLUDE_ENV_VARS=1 --name http-echo-tests -p 8080:808
 ```
 
 Then do a normal request via curl or browser, and you will see the `env` property in the response body.
+
+## Setting CORS(Cross-Origin Resource Sharing) headers in the response
+
+Enable CORS headers in response by setting the environment variable `CORS_ALLOW_ORIGIN` to the list of allowed origins.
+CORS configuration can be further fine-tuned by using the following environment variables:
+
+- **`CORS_ALLOW_METHODS`**: List of Http methods allowed.
+- **`CORS_ALLOW_HEADERS`**: List of headers allowed.
+- **`CORS_ALLOW_CREDENTIALS`**: Comma-separated list of origin URLs from which the policy allows credentials to be sent.
+
+None of these CORS settings can be set without setting the `CORS_ALLOW_ORIGIN` first. By default, they will all be missing when only the `CORS_ALLOW_ORIGIN` is set and need to be explicitly specified alongside `CORS_ALLOW_ORIGIN`.
 
 
 ## Client certificate details (mTLS) in the response
