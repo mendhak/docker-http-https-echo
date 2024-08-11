@@ -69,6 +69,22 @@ app.all('*', (req, res) => {
     }
   };
 
+  if(process.env.PRESERVE_HEADER_CASE){
+    let newHeaders = {...req.headers};
+
+    // req.headers is in lowercase, processed, deduplicated. req.rawHeaders is not.
+    // Match on the preserved case of the header name, populate newHeaders with preserved case and processed value. 
+    for (let i = 0; i < req.rawHeaders.length; i += 2) {
+      let preservedHeaderName = req.rawHeaders[i];
+      if (preservedHeaderName == preservedHeaderName.toLowerCase()) { continue; }
+  
+      newHeaders[preservedHeaderName] = req.header(preservedHeaderName);
+      delete newHeaders[preservedHeaderName.toLowerCase()];
+    }
+    echo.headers = newHeaders;
+  }
+  
+
   //Add client certificate details to the output, if present
   //This only works if `requestCert` is true when starting the server.
   if(req.socket.getPeerCertificate){
