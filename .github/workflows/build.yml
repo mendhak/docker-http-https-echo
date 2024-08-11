@@ -45,16 +45,17 @@ jobs:
           images: |
             mendhak/http-https-echo
 
-      - name: Build the image multi-platform
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          platforms: linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/ppc64le
-          push: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+      # Commenting out, possible bug: https://github.com/nodejs/docker-node/issues/1946
+      # - name: Build the image multi-platform
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     context: .
+      #     platforms: linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/ppc64le
+      #     push: false
+      #     cache-from: type=gha
+      #     cache-to: type=gha,mode=max
+      #     tags: ${{ steps.meta.outputs.tags }}
+      #     labels: ${{ steps.meta.outputs.labels }}
 
       # Due to bug https://github.com/docker/buildx/issues/59, need to build for single platform, load, then run tests. 
       - name: Build a test image single platform and load it
@@ -65,7 +66,9 @@ jobs:
           load: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          tags: "mendhak/http-https-echo:testing"
+          tags: |
+            ${{ steps.meta.outputs.tags }}
+            "mendhak/http-https-echo:testing"
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Run tests using the test image
