@@ -7,6 +7,7 @@ RUN set -ex \
   # Build JS-Application
   && npm install --production \
   # Generate SSL-certificate (for HTTPS)
+  && apk update && apk upgrade \
   && apk --no-cache add openssl \
   && openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes -keyout privkey.pem -out fullchain.pem \
        -subj "/C=GB/ST=London/L=London/O=Mendhak/CN=my.example.com" \
