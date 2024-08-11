@@ -48,7 +48,7 @@ docker ps -aq --filter "name=http-echo-tests" | grep -q . && docker stop http-ec
 
 message " Start container normally "
 docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
-sleep 5
+sleep 10
 
 
 message " Make http(s) request, and test the path, method, header and status code. "
