@@ -1,4 +1,4 @@
-FROM node:22-alpine AS build
+FROM node:20-alpine AS build
 
 WORKDIR /app
 COPY . /app
@@ -19,7 +19,7 @@ RUN set -ex \
   && chown -R node:node /app \
   && chmod +r /app/privkey.pem
 
-FROM node:22-alpine AS final
+FROM node:20-alpine AS final
 LABEL \
     org.opencontainers.image.title="http-https-echo" \
     org.opencontainers.image.description="Docker image that echoes request data as JSON; listens on HTTP/S, with various extra features, useful for debugging." \
