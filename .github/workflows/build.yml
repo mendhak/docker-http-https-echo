@@ -76,7 +76,7 @@ jobs:
         uses: anchore/scan-action@v3
         with:
           image: "mendhak/http-https-echo:latest"
-          output-format: sarif
+          output-format: table
           severity-cutoff: critical
 
       - name: upload Anchore scan SARIF report
