@@ -78,9 +78,10 @@ jobs:
         id: scan
         uses: anchore/scan-action@v3
         with:
-          image: "mendhak/http-https-echo:latest"
-          output-format: table
-          severity-cutoff: critical
+          image: "mendhak/http-https-echo:testing"
+          output-format: sarif
+          # severity-cutoff: critical
+          fail-build: false
 
       - name: upload Anchore scan SARIF report
         uses: github/codeql-action/upload-sarif@v3
