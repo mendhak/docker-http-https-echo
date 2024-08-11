@@ -47,6 +47,13 @@ app.use(function(req, res, next){
 
 //Handle all paths
 app.all('*', (req, res) => {
+  
+  if(process.env.OVERRIDE_RESPONSE_BODY_FILE_PATH){
+    // Path is relative to current directory
+    res.sendFile(process.env.OVERRIDE_RESPONSE_BODY_FILE_PATH, { root : __dirname});
+    return;
+  }
+
   const echo = {
     path: req.path,
     headers: req.headers,

@@ -532,6 +532,23 @@ message " Stop containers "
 docker stop http-echo-tests
 sleep 5
 
+message " Start container with a custom response body from a file "
+echo "<h1>Hello World</h1>" > test.html
+docker run -d --rm -v ${PWD}/test.html:/app/test.html --name http-echo-tests -p 8080:8080 -e OVERRIDE_RESPONSE_BODY_FILE_PATH=/test.html -t mendhak/http-https-echo:testing
+sleep 5
+RESPONSE_BODY=$(curl -s http://localhost:8080)
+if [[ "$RESPONSE_BODY" == "<h1>Hello World</h1>" ]]
+then
+    passed "Custom response body from file"
+else
+    failed "Custom response body from file failed"
+    exit 1
+fi
+
+message " Stop containers "
+docker stop http-echo-tests
+sleep 5
+
 popd
 rm -rf testarea
 message "DONE"
