@@ -7,7 +7,6 @@ RUN set -ex \
   # Build JS-Application
   && npm install --production \
   # Generate SSL-certificate (for HTTPS)
-  && apk update && apk upgrade \
   && apk --no-cache add openssl \
   && openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes -keyout privkey.pem -out fullchain.pem \
        -subj "/C=GB/ST=London/L=London/O=Mendhak/CN=my.example.com" \
@@ -20,7 +19,7 @@ RUN set -ex \
   && chown -R node:node /app \
   && chmod +r /app/privkey.pem
 
-FROM node:16-alpine AS final
+FROM node:22-alpine AS final
 LABEL \
     org.opencontainers.image.title="http-https-echo" \
     org.opencontainers.image.description="Docker image that echoes request data as JSON; listens on HTTP/S, with various extra features, useful for debugging." \
