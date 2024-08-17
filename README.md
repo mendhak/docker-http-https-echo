@@ -32,6 +32,8 @@ This image is executed as non root by default and is fully compliant with Kubern
 - [Include environment variables in the response](#include-environment-variables-in-the-response)
 - [Configuring CORS policy](#setting-corscross-origin-resource-sharing-headers-in-the-response) 
 - [Client certificate details (mTLS) in the response](#client-certificate-details-mtls-in-the-response)
+- [Preserve the case of headers in response body](#preserve-the-case-of-headers-in-response-body)
+- [Override the response body with a file](#override-the-response-body-with-a-file)
 - [Prometheus Metrics](#prometheus-metrics)
 - [Screenshots](#screenshots)
 - [Building](#building)
@@ -277,6 +279,24 @@ If you browse to https://localhost:8443/ in Firefox, you won't get prompted to s
 ```bash
 openssl pkcs12 -export -in cert.pem -inkey privkey.pem -out certpkcs12.pfx
 ```
+
+## Preserve the case of headers in response body
+
+By default, the headers in the response body are lowercased. To attempt to preserve the case of headers in the response body, set the environment variable `PRESERVE_HEADER_CASE` to true.
+
+```bash
+docker run -e PRESERVE_HEADER_CASE=true -p 8080:8080 -p 8443:8443 --rm -t mendhak/http-https-echo:33
+```
+
+## Override the response body with a file
+
+To override the response body with a file, set the environment variable `OVERRIDE_RESPONSE_BODY_FILE_PATH` to a file path.  
+The file path needs to be in the `/app` directory.  
+
+```bash
+docker run -d --rm -v ${PWD}/test.html:/app/test.html -p 8080:8080 -e OVERRIDE_RESPONSE_BODY_FILE_PATH=/test.html -t mendhak/http-https-echo:33
+```
+
 
 ## Prometheus Metrics
 

@@ -48,7 +48,7 @@ docker ps -aq --filter "name=http-echo-tests" | grep -q . && docker stop http-ec
 
 message " Start container normally "
 docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
-sleep 5
+sleep 10
 
 
 message " Make http(s) request, and test the path, method, header and status code. "
@@ -507,6 +507,41 @@ then
     passed "PROMETHEUS metrics are enabled"
 else
     failed "PROMETHEUS metrics are disabled"
+    exit 1
+fi
+
+
+message " Stop containers "
+docker stop http-echo-tests
+sleep 5
+
+message " Start container with PRESERVE_HEADER_CASE enabled "
+docker run -d -e PRESERVE_HEADER_CASE=true --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
+
+sleep 5
+HEADER_CASE_CHECK=$(curl -s -H "prEseRVe-CaSE: A1b2C3" -H 'x-a-b: 999'  -H 'X-a-B: 13'  localhost:8080 | jq -r '.headers."prEseRVe-CaSE"')
+if [[ "$HEADER_CASE_CHECK" == "A1b2C3" ]]
+then
+    passed "PRESERVE_HEADER_CASE enabled"
+else
+    failed "PRESERVE_HEADER_CASE failed"
+    exit 1
+fi
+
+message " Stop containers "
+docker stop http-echo-tests
+sleep 5
+
+message " Start container with a custom response body from a file "
+echo "<h1>Hello World</h1>" > test.html
+docker run -d --rm -v ${PWD}/test.html:/app/test.html --name http-echo-tests -p 8080:8080 -e OVERRIDE_RESPONSE_BODY_FILE_PATH=/test.html -t mendhak/http-https-echo:testing
+sleep 5
+RESPONSE_BODY=$(curl -s http://localhost:8080)
+if [[ "$RESPONSE_BODY" == "<h1>Hello World</h1>" ]]
+then
+    passed "Custom response body from file"
+else
+    failed "Custom response body from file failed"
     exit 1
 fi
 
