@@ -75,6 +75,8 @@ With docker compose, this would be:
             - "8080:8888"
             - "8443:9999"
 
+You can also set either of these to `0` to randomly assign an available port (see Node.js [docs](https://nodejs.org/api/net.html#serverlistenport-host-backlog-callback)); this may be useful to avoid internal port conflicts in cases where two 
+explicit ports aren't needed and multiple containers share the same network.
 
 ## Use your own certificates
 
