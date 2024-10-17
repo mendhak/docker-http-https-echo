@@ -105,7 +105,11 @@ app.all('*', (req, res) => {
 
   //If the Content-Type of the incoming body `is` JSON, it can be parsed and returned in the body
   if(req.is('application/json')){
-    echo.json = JSON.parse(req.body)
+    try {
+      echo.json = JSON.parse(req.body)
+    } catch (error) {
+      console.warn("Invalid JSON Body received with Content-Type: application/json", error);
+    }
   }
 
   //If there's a JWT header, parse it and decode and put it in the response
