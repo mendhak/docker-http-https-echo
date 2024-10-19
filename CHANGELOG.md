@@ -1,12 +1,14 @@
+## Version `35` - 2024-10-19
+* Error handling for when invalid JSON body is passed in
 
-## Version `34` - `2024-08-17`
+## Version `34` - 2024-08-17
 * Set `PRESERVE_HEADER_CASE` to `1` to attempt to preserve the case of headers in the response.
 * Set `OVERRIDE_RESPONSE_BODY_FILE_PATH` to a path, to override the response body with the contents of that file. 
 
-## Version `33` - `2024-04-07`
+## Version `33` - 2024-04-07
 * Implementing configurable CORS settings by [ash0ne](https://github.com/mendhak/docker-http-https-echo/pull/65). 
 
-## Version `32` - `2024-03-28`
+## Version `32` - 2024-03-28
 * Update Express to 4.19.2 to address CVE-2024-29041
 
 ## Version `31` - 2023-12-03

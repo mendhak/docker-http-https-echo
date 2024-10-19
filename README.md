@@ -8,8 +8,8 @@ It comes with various options that can manipulate the response output, see the t
 
 ![browser](./screenshots/screenshot.png)
 
-The image is available on [Docker Hub](https://hub.docker.com/r/mendhak/http-https-echo): `mendhak/http-https-echo:34`
-The image is available on [Github Container Registry](https://github.com/mendhak/docker-http-https-echo/pkgs/container/http-https-echo): `ghcr.io/mendhak/http-https-echo:34`
+The image is available on [Docker Hub](https://hub.docker.com/r/mendhak/http-https-echo): `mendhak/http-https-echo:35`
+The image is available on [Github Container Registry](https://github.com/mendhak/docker-http-https-echo/pkgs/container/http-https-echo): `ghcr.io/mendhak/http-https-echo:35`
 
 Please do not use the `:latest` tag as it will break without warning, use a specific version instead.
 
@@ -44,7 +44,7 @@ This image is executed as non root by default and is fully compliant with Kubern
 
 Run with Docker
 
-    docker run -p 8080:8080 -p 8443:8443 --rm -t mendhak/http-https-echo:34
+    docker run -p 8080:8080 -p 8443:8443 --rm -t mendhak/http-https-echo:35
 
 Or run with Docker Compose
 
@@ -61,13 +61,13 @@ You can choose a different internal port instead of 8080 and 8443 with the `HTTP
 
 In this example I'm setting http to listen on 8888, and https to listen on 9999.
 
-     docker run -e HTTP_PORT=8888 -e HTTPS_PORT=9999 -p 8080:8888 -p 8443:9999 --rm -t mendhak/http-https-echo:34
+     docker run -e HTTP_PORT=8888 -e HTTPS_PORT=9999 -p 8080:8888 -p 8443:9999 --rm -t mendhak/http-https-echo:35
 
 
 With docker compose, this would be:
 
     my-http-listener:
-        image: mendhak/http-https-echo:34
+        image: mendhak/http-https-echo:35
         environment:
             - HTTP_PORT=8888
             - HTTPS_PORT=9999
@@ -83,7 +83,7 @@ The certificates are at `/app/fullchain.pem` and `/app/privkey.pem`.
 You can use volume mounting to substitute the certificate and private key with your own.
 
     my-http-listener:
-        image: mendhak/http-https-echo:34
+        image: mendhak/http-https-echo:35
         ports:
             - "8080:8080"
             - "8443:8443"
@@ -98,7 +98,7 @@ You can use the environment variables `HTTPS_CERT_FILE` and `HTTPS_KEY_FILE` to 
 
 If you specify the header that contains the JWT, the echo output will contain the decoded JWT.  Use the `JWT_HEADER` environment variable for this.
 
-    docker run -e JWT_HEADER=Authentication -p 8080:8080 -p 8443:8443 --rm -it mendhak/http-https-echo:34
+    docker run -e JWT_HEADER=Authentication -p 8080:8080 -p 8443:8443 --rm -it mendhak/http-https-echo:35
 
 
 Now make your request with `Authentication: eyJ...` header (it should also work with the `Authentication: Bearer eyJ...` schema too):
@@ -111,7 +111,7 @@ And in the output you should see a `jwt` section.
 
 In the log output set the environment variable `DISABLE_REQUEST_LOGS` to true, to disable the specific ExpressJS request log lines. The ones like `::ffff:172.17.0.1 - - [03/Jan/2022:21:31:51 +0000] "GET /xyz HTTP/1.1" 200 423 "-" "curl/7.68.0"`.  The JSON output will still appear.
 
-    docker run --rm -e DISABLE_REQUEST_LOGS=true --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:34
+    docker run --rm -e DISABLE_REQUEST_LOGS=true --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:35
 
 
 ## Do not log specific path
@@ -119,13 +119,13 @@ In the log output set the environment variable `DISABLE_REQUEST_LOGS` to true, t
 Set the environment variable `LOG_IGNORE_PATH` to a path you would like to exclude from verbose logging to stdout.
 This can help reduce noise from healthchecks in orchestration/infrastructure like Swarm, Kubernetes, ALBs, etc.
 
-     docker run -e LOG_IGNORE_PATH=/ping -p 8080:8080 -p 8443:8443 --rm -t mendhak/http-https-echo:34
+     docker run -e LOG_IGNORE_PATH=/ping -p 8080:8080 -p 8443:8443 --rm -t mendhak/http-https-echo:35
 
 
 With docker compose, this would be:
 
     my-http-listener:
-        image: mendhak/http-https-echo:34
+        image: mendhak/http-https-echo:35
         environment:
             - LOG_IGNORE_PATH=/ping
         ports:
@@ -156,7 +156,7 @@ Will contain a `json` property in the response/output.
 You can disable new lines in the log output by setting the environment variable `LOG_WITHOUT_NEWLINE`. For example,
 
 ```bash
-docker run -e LOG_WITHOUT_NEWLINE=true -p 8080:8080 -p 8443:8443 --rm -t mendhak/http-https-echo:34
+docker run -e LOG_WITHOUT_NEWLINE=true -p 8080:8080 -p 8443:8443 --rm -t mendhak/http-https-echo:35
 ```
 
 ## Send an empty response
@@ -164,7 +164,7 @@ docker run -e LOG_WITHOUT_NEWLINE=true -p 8080:8080 -p 8443:8443 --rm -t mendhak
 You can disable the JSON output in the response by setting the environment variable `ECHO_BACK_TO_CLIENT`. For example,
 
 ```bash
-docker run -e ECHO_BACK_TO_CLIENT=false -p 8080:8080 -p 8443:8443 --rm -t mendhak/http-https-echo:34
+docker run -e ECHO_BACK_TO_CLIENT=false -p 8080:8080 -p 8443:8443 --rm -t mendhak/http-https-echo:35
 ```
 
 ## Custom status code
@@ -245,7 +245,7 @@ You can have environment variables (that are visible to the echo server's proces
 Pass the `ECHO_INCLUDE_ENV_VARS=1` environment variable in.
 
 ```bash
-docker run -d --rm -e ECHO_INCLUDE_ENV_VARS=1 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:34
+docker run -d --rm -e ECHO_INCLUDE_ENV_VARS=1 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:35
 ```
 
 Then do a normal request via curl or browser, and you will see the `env` property in the response body.
@@ -285,7 +285,7 @@ openssl pkcs12 -export -in cert.pem -inkey privkey.pem -out certpkcs12.pfx
 By default, the headers in the response body are lowercased. To attempt to preserve the case of headers in the response body, set the environment variable `PRESERVE_HEADER_CASE` to true.
 
 ```bash
-docker run -e PRESERVE_HEADER_CASE=true -p 8080:8080 -p 8443:8443 --rm -t mendhak/http-https-echo:34
+docker run -e PRESERVE_HEADER_CASE=true -p 8080:8080 -p 8443:8443 --rm -t mendhak/http-https-echo:35
 ```
 
 ## Override the response body with a file
@@ -294,7 +294,7 @@ To override the response body with a file, set the environment variable `OVERRID
 The file path needs to be in the `/app` directory.  
 
 ```bash
-docker run -d --rm -v ${PWD}/test.html:/app/test.html -p 8080:8080 -e OVERRIDE_RESPONSE_BODY_FILE_PATH=/test.html -t mendhak/http-https-echo:34
+docker run -d --rm -v ${PWD}/test.html:/app/test.html -p 8080:8080 -e OVERRIDE_RESPONSE_BODY_FILE_PATH=/test.html -t mendhak/http-https-echo:35
 ```
 
 
