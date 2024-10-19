@@ -155,6 +155,15 @@ else
     exit 1
 fi
 
+REQUEST=$(curl -s -X POST -H "Content-Type: application/json" -d 'not-json' http://localhost:8080)
+if [ $(echo $REQUEST | jq -r '.json') == 'null' ]; then
+    passed "JSON with Invalid Body test passed."
+else
+    failed "JSON with Invalid Body test failed."
+    echo $REQUEST | jq
+    exit 1
+fi
+
 message " Stop containers "
 docker stop http-echo-tests
 sleep 5
