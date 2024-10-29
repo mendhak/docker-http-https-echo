@@ -1,0 +1,28 @@
+name: 'Mirror images to RB Artifactory'
+
+on:
+  workflow_call:
+    inputs:
+      image-tag:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      image-tag:
+        required: true
+        type: string
+
+jobs:
+  mirror-image:
+    if: contains(github.server_url, 'github.com')
+    runs-on: [self-hosted, Linux, X64, rocky-latest, akcz-rb]
+    steps:
+      - name: Mirror image
+        uses: akcentacz/mirror-actions/container@v1
+        with:
+          src_registry: docker://ghcr.io/${{ github.repository }}/${{ matrix.svc }}:${{ inputs.image-tag }}
+          src_username: ${{ github.actor }}
+          src_password: ${{ secrets.JAVA_DEPLOY_TOKEN }}
+          dest_registry: docker://akcz-delta-images.artifactory.rb.cz/akcz-delta-images/${{ github.event.repository.name }}/${{ matrix.svc }}:${{ inputs.image-tag }}
+          dest_username: 'akcz-delta-img-delivery'
+          dest_password: ${{ secrets.RB_ARTIFACTORY_TOKEN }}

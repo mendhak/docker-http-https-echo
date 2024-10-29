@@ -1,89 +1,59 @@
-# This is a basic workflow to help you get started with Actions
+name: 'Build and publish Docker image'
 
-name: Build
-
-# Controls when the action will run.
 on:
-  push:
-    branches-ignore:
-      - "dependabot/**"
-  pull_request:
-    paths-ignore:
-      - '**.md'
   workflow_dispatch:
+    inputs:
+      image-tag:
+        required: true
+        type: string
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+env:
+  REGISTRY: ghcr.io
+  NODE_ENV: production
+  IMAGE_NAME: ${{ github.repository }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  build-and-push-image:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image-tag: ${{ steps.argocd.outputs.image-tag }}
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Inspect builder
-        run: |
-          echo "Name:      ${{ steps.buildx.outputs.name }}"
-          echo "Endpoint:  ${{ steps.buildx.outputs.endpoint }}"
-          echo "Status:    ${{ steps.buildx.outputs.status }}"
-          echo "Flags:     ${{ steps.buildx.outputs.flags }}"
-          echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
-
-      - name: Docker metadata
-        id: meta
-        uses: docker/metadata-action@v5
+      - name: Log in to the Container registry
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
         with:
-          images: |
-            mendhak/http-https-echo
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Commenting out, possible bug: https://github.com/nodejs/docker-node/issues/1946
-      # - name: Build the image multi-platform
-      #   uses: docker/build-push-action@v5
-      #   with:
-      #     context: .
-      #     platforms: linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/ppc64le
-      #     push: false
-      #     cache-from: type=gha
-      #     cache-to: type=gha,mode=max
-      #     tags: ${{ steps.meta.outputs.tags }}
-      #     labels: ${{ steps.meta.outputs.labels }}
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        with:
+          images: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
+          tags: |
+            type=semver,pattern={{version}}
+            type=ref,event=branch,suffix=-{{sha}}
 
-      # Due to bug https://github.com/docker/buildx/issues/59, need to build for single platform, load, then run tests. 
-      - name: Build a test image single platform and load it
-        uses: docker/build-push-action@v5
+      - name: Build and push Docker image
+        uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
         with:
           context: .
-          push: false
-          load: true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          tags: |
-            ${{ steps.meta.outputs.tags }}
-            "mendhak/http-https-echo:testing"
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-      - name: Run tests using the test image
-        run: ./tests.sh
-
-      - name: Scan the image
-        id: scan
-        uses: anchore/scan-action@v3
-        with:
-          image: "mendhak/http-https-echo:testing"
-          output-format: sarif
-          # severity-cutoff: critical
-          fail-build: false
-
-      - name: upload Anchore scan SARIF report
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: ${{ steps.scan.outputs.sarif }}
+  mirror-images-to-rb:
+    uses: ./.github/workflows/mirror-images-to-rb.yml
+    needs:
+      - build-and-push-image
+    with:
+      image-tag: ${{ needs.docker-build-and-push-image.outputs.image-tag }}
+    secrets: inherit
