@@ -155,6 +155,18 @@ else
     exit 1
 fi
 
+
+message " Make JSON request with gzip Content-Encoding, and test that json is in the output. "
+REQUEST=$(echo -n '{"a":"b"}' | gzip | curl -s -X POST -H "Content-Encoding: gzip" -H "Content-Type: application/json" --data-binary @- http://localhost:8080/)
+if [ $(echo $REQUEST | jq -r '.json.a') == 'b' ]
+then
+    passed "JSON test passed."
+else
+    failed "JSON test failed."
+    echo $REQUEST | jq
+    exit 1
+fi
+
 REQUEST=$(curl -s -X POST -H "Content-Type: application/json" -d 'not-json' http://localhost:8080)
 if [ $(echo $REQUEST | jq -r '.json') == 'null' ]; then
     passed "JSON with Invalid Body test passed."
