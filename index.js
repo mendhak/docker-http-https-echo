@@ -7,6 +7,7 @@ const express = require('express')
 const concat = require('concat-stream');
 const { promisify } = require('util');
 const promBundle = require("express-prom-bundle");
+const zlib = require("zlib");
 
 const {
   PROMETHEUS_ENABLED = false,
@@ -40,11 +41,16 @@ if(process.env.DISABLE_REQUEST_LOGS !== 'true'){
 
 app.use(function(req, res, next){
   req.pipe(concat(function(data){
-    req.body = data.toString('utf8');
+
+    if (req.get("Content-Encoding") === "gzip") {
+      req.body = zlib.gunzipSync(data).toString('utf8');
+    }
+    else {
+      req.body = data.toString('utf8');
+    }
     next();
   }));
 });
-
 //Handle all paths
 app.all('*', (req, res) => {
   
