@@ -1,3 +1,6 @@
+## Version `36` - 2025-03-22
+* Basic handling of gzip content-encoding on requests by [matt-mercer](https://github.com/mendhak/docker-http-https-echo/pull/79)
+
 ## Version `35` - 2024-10-19
 * Error handling for when invalid JSON body is passed in
 
