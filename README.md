@@ -116,21 +116,12 @@ In the log output set the environment variable `DISABLE_REQUEST_LOGS` to true, t
 
 ## Do not log specific path
 
-Set the environment variable `LOG_IGNORE_PATH` to a path you would like to exclude from verbose logging to stdout.
+Set the environment variable `LOG_IGNORE_PATH` to a path or a regex you would like to exclude from verbose logging to stdout.
 This can help reduce noise from healthchecks in orchestration/infrastructure like Swarm, Kubernetes, ALBs, etc.
 
      docker run -e LOG_IGNORE_PATH=/ping -p 8080:8080 -p 8443:8443 --rm -t mendhak/http-https-echo:36
+     docker run -e LOG_IGNORE_PATH="^\/ping|^\/health|^\/metrics" -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:36
 
-
-With docker compose, this would be:
-
-    my-http-listener:
-        image: mendhak/http-https-echo:36
-        environment:
-            - LOG_IGNORE_PATH=/ping
-        ports:
-            - "8080:8080"
-            - "8443:8443"
 
 
 ## JSON payloads and JSON output
