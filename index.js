@@ -175,7 +175,7 @@ app.all('*', (req, res) => {
     }
 
     //Certain paths can be ignored in the container logs, useful to reduce noise from healthchecks
-    if (process.env.LOG_IGNORE_PATH != req.path) {
+    if (!process.env.LOG_IGNORE_PATH || !new RegExp(process.env.LOG_IGNORE_PATH).test(req.path)) {
 
       let spacer = 4;
       if(process.env.LOG_WITHOUT_NEWLINE){
