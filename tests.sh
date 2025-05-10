@@ -317,10 +317,29 @@ else
 fi
 
 
+message " Stop containers "
+docker stop http-echo-tests
+sleep 5
+
+message " Start container with LOG_IGNORE_PATH (ignore all paths) "
+docker run -d --rm -e LOG_IGNORE_PATH=".*" --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
+sleep 5
+curl -s -k -X POST -d "banana" https://localhost:8443/ > /dev/null
+
+if [ $(docker logs http-echo-tests | wc -l) == 2 ] && \
+   ! [ $(docker logs http-echo-tests | grep banana) ]
+then
+    passed "LOG_IGNORE_PATH ignored all paths"
+else
+    failed "LOG_IGNORE_PATH failed"
+    docker logs http-echo-tests
+    exit 1
+fi
 
 message " Stop containers "
 docker stop http-echo-tests
 sleep 5
+
 
 message " Start container with DISABLE_REQUEST_LOGS "
 docker run -d --rm -e DISABLE_REQUEST_LOGS=true --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
