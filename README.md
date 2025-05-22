@@ -125,6 +125,7 @@ This can help reduce noise from healthchecks in orchestration/infrastructure lik
     docker run -e LOG_IGNORE_PATH="^\/ping|^\/health|^\/metrics" -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:37
     # Ignore all paths
     docker run -e LOG_IGNORE_PATH=".*" -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:37
+    docker run -e LOG_IGNORE_PATH="^" -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:37
 
 
 
