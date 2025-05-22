@@ -1,3 +1,6 @@
+## Version `37` - 2025-05-10
+* The `LOG_IGNORE_PATH` environment variable now takes a regex, so you can ignore multiple paths.
+
 ## Version `36` - 2025-03-22
 * Basic handling of gzip content-encoding on requests by [matt-mercer](https://github.com/mendhak/docker-http-https-echo/pull/79)
 
