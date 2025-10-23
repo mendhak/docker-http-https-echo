@@ -16,6 +16,7 @@ const {
   PROMETHEUS_WITH_METHOD = 'true',
   PROMETHEUS_WITH_STATUS = 'true',
   PROMETHEUS_METRIC_TYPE = 'summary',
+  MAX_HEADER_SIZE = 1048576
 } = process.env
 
 const sleep = promisify(setTimeout);
@@ -189,22 +190,27 @@ app.all('*', (req, res) => {
 
 });
 
-let sslOpts = {
+let httpOpts = {
+  maxHeaderSize: process.env.MAX_HEADER_SIZE
+}
+
+let httpsOpts = {
   key: require('fs').readFileSync(process.env.HTTPS_KEY_FILE || 'privkey.pem'),
-  cert: require('fs').readFileSync(process.env.HTTPS_CERT_FILE || 'fullchain.pem')
+  cert: require('fs').readFileSync(process.env.HTTPS_CERT_FILE || 'fullchain.pem'),
+  maxHeaderSize: process.env.MAX_HEADER_SIZE
 };
 
 //Whether to enable the client certificate feature
 if(process.env.MTLS_ENABLE){
-    sslOpts = {
+  httpsOpts = {
       requestCert: true,
       rejectUnauthorized: false,
-      ...sslOpts
+      ...httpsOpts
     }
 }
 
-var httpServer = http.createServer(app).listen(process.env.HTTP_PORT || 8080);
-var httpsServer = https.createServer(sslOpts,app).listen(process.env.HTTPS_PORT || 8443);
+var httpServer = http.createServer(httpOpts, app).listen(process.env.HTTP_PORT || 8080);
+var httpsServer = https.createServer(httpsOpts,app).listen(process.env.HTTPS_PORT || 8443);
 console.log(`Listening on ports ${process.env.HTTP_PORT || 8080} for http, and ${process.env.HTTPS_PORT || 8443} for https.`);
 
 let calledClose = false;
