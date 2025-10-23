@@ -176,6 +176,17 @@ else
     exit 1
 fi
 
+message " Make request with a large header."
+LARGE_HEADER_VALUE=$(head -c 10000 </dev/urandom | base64 | tr -d '\n')
+REQUEST=$(curl -s -k -H "Large-Header: $LARGE_HEADER_VALUE" https://localhost:8443/)
+if [ $(echo $REQUEST | jq -r '.headers."large-header"') == "$LARGE_HEADER_VALUE" ]; then
+    passed "Large header test passed."
+else
+    failed "Large header test failed."
+    echo $REQUEST | jq
+    exit 1
+fi
+
 message " Stop containers "
 docker stop http-echo-tests
 sleep 5
