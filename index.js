@@ -191,13 +191,13 @@ app.all('*', (req, res) => {
 });
 
 let httpOpts = {
-  maxHeaderSize: process.env.MAX_HEADER_SIZE
+  maxHeaderSize: MAX_HEADER_SIZE
 }
 
 let httpsOpts = {
   key: require('fs').readFileSync(process.env.HTTPS_KEY_FILE || 'privkey.pem'),
   cert: require('fs').readFileSync(process.env.HTTPS_CERT_FILE || 'fullchain.pem'),
-  maxHeaderSize: process.env.MAX_HEADER_SIZE
+  maxHeaderSize: MAX_HEADER_SIZE
 };
 
 //Whether to enable the client certificate feature
