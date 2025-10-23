@@ -32,16 +32,16 @@ const app = express()
 app.set('json spaces', 2);
 app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
 
-if (PROMETHEUS_ENABLED === 'true') {
+if(PROMETHEUS_ENABLED === 'true') {
   app.use(metricsMiddleware);
 }
 
-if (process.env.DISABLE_REQUEST_LOGS !== 'true') {
+if(process.env.DISABLE_REQUEST_LOGS !== 'true'){
   app.use(morgan('combined'));
 }
 
-app.use(function (req, res, next) {
-  req.pipe(concat(function (data) {
+app.use(function(req, res, next){
+  req.pipe(concat(function(data){
 
     if (req.get("Content-Encoding") === "gzip") {
       req.body = zlib.gunzipSync(data).toString('utf8');
@@ -54,10 +54,10 @@ app.use(function (req, res, next) {
 });
 //Handle all paths
 app.all('*', (req, res) => {
-
-  if (process.env.OVERRIDE_RESPONSE_BODY_FILE_PATH) {
+  
+  if(process.env.OVERRIDE_RESPONSE_BODY_FILE_PATH){
     // Path is relative to current directory
-    res.sendFile(process.env.OVERRIDE_RESPONSE_BODY_FILE_PATH, { root: __dirname });
+    res.sendFile(process.env.OVERRIDE_RESPONSE_BODY_FILE_PATH, { root : __dirname});
     return;
   }
 
@@ -83,35 +83,35 @@ app.all('*', (req, res) => {
     }
   };
 
-  if (process.env.PRESERVE_HEADER_CASE) {
-    let newHeaders = { ...req.headers };
+  if(process.env.PRESERVE_HEADER_CASE){
+    let newHeaders = {...req.headers};
 
     // req.headers is in lowercase, processed, deduplicated. req.rawHeaders is not.
     // Match on the preserved case of the header name, populate newHeaders with preserved case and processed value. 
     for (let i = 0; i < req.rawHeaders.length; i += 2) {
       let preservedHeaderName = req.rawHeaders[i];
       if (preservedHeaderName == preservedHeaderName.toLowerCase()) { continue; }
-
+  
       newHeaders[preservedHeaderName] = req.header(preservedHeaderName);
       delete newHeaders[preservedHeaderName.toLowerCase()];
     }
     echo.headers = newHeaders;
   }
-
+  
 
   //Add client certificate details to the output, if present
   //This only works if `requestCert` is true when starting the server.
-  if (req.socket.getPeerCertificate) {
+  if(req.socket.getPeerCertificate){
     echo.clientCertificate = req.socket.getPeerCertificate();
   }
 
   //Include visible environment variables
-  if (process.env.ECHO_INCLUDE_ENV_VARS) {
+  if(process.env.ECHO_INCLUDE_ENV_VARS){
     echo.env = process.env;
   }
 
   //If the Content-Type of the incoming body `is` JSON, it can be parsed and returned in the body
-  if (req.is('application/json')) {
+  if(req.is('application/json')){
     try {
       echo.json = JSON.parse(req.body)
     } catch (error) {
@@ -126,7 +126,7 @@ app.all('*', (req, res) => {
       echo.jwt = token;
     } else {
       token = token.split(" ").pop();
-      const decoded = jwt.decode(token, { complete: true });
+      const decoded = jwt.decode(token, {complete: true});
       echo.jwt = decoded;
     }
   }
@@ -144,12 +144,12 @@ app.all('*', (req, res) => {
     //Set the response content type to what the user wants
     const setResponseContentType = req.headers["x-set-response-content-type"] || req.query["x-set-response-content-type"];
 
-    if (setResponseContentType) {
+    if(setResponseContentType){
       res.contentType(setResponseContentType);
     }
 
     //Set the CORS policy
-    if (process.env.CORS_ALLOW_ORIGIN) {
+    if (process.env.CORS_ALLOW_ORIGIN){
       res.header('Access-Control-Allow-Origin', process.env.CORS_ALLOW_ORIGIN);
       if (process.env.CORS_ALLOW_METHODS) {
         res.header('Access-Control-Allow-Methods', process.env.CORS_ALLOW_METHODS);
@@ -163,7 +163,7 @@ app.all('*', (req, res) => {
     }
 
     //Ability to send an empty response back
-    if (process.env.ECHO_BACK_TO_CLIENT != undefined && process.env.ECHO_BACK_TO_CLIENT == "false") {
+    if (process.env.ECHO_BACK_TO_CLIENT != undefined && process.env.ECHO_BACK_TO_CLIENT == "false"){
       res.end();
     }
     //Ability to send just the request body in the response, nothing else
@@ -179,7 +179,7 @@ app.all('*', (req, res) => {
     if (!process.env.LOG_IGNORE_PATH || !new RegExp(process.env.LOG_IGNORE_PATH).test(req.path)) {
 
       let spacer = 4;
-      if (process.env.LOG_WITHOUT_NEWLINE) {
+      if(process.env.LOG_WITHOUT_NEWLINE){
         spacer = null;
       }
 
@@ -201,16 +201,16 @@ let httpsOpts = {
 };
 
 //Whether to enable the client certificate feature
-if (process.env.MTLS_ENABLE) {
-  httpsOpts = {
-    requestCert: true,
-    rejectUnauthorized: false,
-    ...httpsOpts
-  }
+if(process.env.MTLS_ENABLE){
+    httpsOpts = {
+      requestCert: true,
+      rejectUnauthorized: false,
+      ...httpsOpts
+    }
 }
 
 var httpServer = http.createServer(httpOpts, app).listen(process.env.HTTP_PORT || 8080);
-var httpsServer = https.createServer(httpsOpts, app).listen(process.env.HTTPS_PORT || 8443);
+var httpsServer = https.createServer(httpsOpts,app).listen(process.env.HTTPS_PORT || 8443);
 console.log(`Listening on ports ${process.env.HTTP_PORT || 8080} for http, and ${process.env.HTTPS_PORT || 8443} for https.`);
 
 let calledClose = false;
@@ -218,7 +218,7 @@ let calledClose = false;
 process.on('exit', function () {
   if (calledClose) return;
   console.log('Got exit event. Trying to stop Express server.');
-  server.close(function () {
+  server.close(function() {
     console.log("Express server closed");
   });
 });
@@ -226,11 +226,11 @@ process.on('exit', function () {
 process.on('SIGINT', shutDown);
 process.on('SIGTERM', shutDown);
 
-function shutDown() {
+function shutDown(){
   console.log('Got a kill signal. Trying to exit gracefully.');
   calledClose = true;
-  httpServer.close(function () {
-    httpsServer.close(function () {
+  httpServer.close(function() {
+    httpsServer.close(function() {
       console.log("HTTP and HTTPS servers closed. Asking process to exit.");
       process.exit()
     });
