@@ -293,6 +293,14 @@ The file path needs to be in the `/app` directory.
 docker run -d --rm -v ${PWD}/test.html:/app/test.html -p 8080:8080 -e OVERRIDE_RESPONSE_BODY_FILE_PATH=/test.html -t mendhak/http-https-echo:37
 ```
 
+## Set a maximum header size
+
+You can use the `MAX_HEADER_SIZE` environment variable to set a maximum header size in bytes. The default is 1MB. 
+
+```bash
+docker run -d --rm -e MAX_HEADER_SIZE=1000  -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:37
+```
+
 
 ## Prometheus Metrics
 
@@ -323,7 +331,7 @@ You can configure these metrics using the following variables:
 
 
 
-## Building
+## Building and developing locally
 
     docker build -t mendhak/http-https-echo .
 
