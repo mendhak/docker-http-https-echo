@@ -176,14 +176,35 @@ else
     exit 1
 fi
 
-message " Make request with a large header."
-LARGE_HEADER_VALUE=$(head -c 10000 </dev/urandom | base64 | tr -d '\n')
+message " Stop containers "
+docker stop http-echo-tests
+sleep 5
+
+message " Start container with max header size "
+docker run -d --rm -e MAX_HEADER_SIZE=1000 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
+sleep 10
+
+message " Make request with a header within limit."
+LARGE_HEADER_VALUE=$(head -c 600 </dev/urandom | base64 | tr -d '\n')
 REQUEST=$(curl -s -k -H "Large-Header: $LARGE_HEADER_VALUE" https://localhost:8443/)
+
 if [ $(echo $REQUEST | jq -r '.headers."large-header"') == "$LARGE_HEADER_VALUE" ]; then
     passed "Large header test passed."
 else
     failed "Large header test failed."
     echo $REQUEST | jq
+    exit 1
+fi
+
+message " Make request with a header exceeding limit."
+LARGE_HEADER_VALUE=$(head -c 5000 </dev/urandom | base64 | tr -d '\n')
+# Do with curl -v and look for "HTTP/1.1 431 Request Header Fields Too Large" output
+REQUEST=$(curl -v -k -H "Large-Header: $LARGE_HEADER_VALUE" https://localhost:8443/ 2>&1)
+if echo $REQUEST | grep -q "HTTP/1.1 431 Request Header Fields Too Large"; then
+    passed "Large header test resulted in HTTP 431."
+else
+    failed "Large header test failed."
+    echo $REQUEST
     exit 1
 fi
 

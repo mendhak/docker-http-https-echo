@@ -19,6 +19,9 @@ const {
   MAX_HEADER_SIZE = 1048576
 } = process.env
 
+const maxHeaderSize = parseInt(MAX_HEADER_SIZE, 10) || 1048576;
+
+
 const sleep = promisify(setTimeout);
 const metricsMiddleware = promBundle({
   metricsPath: PROMETHEUS_METRICS_PATH,
@@ -191,13 +194,13 @@ app.all('*', (req, res) => {
 });
 
 let httpOpts = {
-  maxHeaderSize: MAX_HEADER_SIZE
+  maxHeaderSize: maxHeaderSize
 }
 
 let httpsOpts = {
   key: require('fs').readFileSync(process.env.HTTPS_KEY_FILE || 'privkey.pem'),
   cert: require('fs').readFileSync(process.env.HTTPS_CERT_FILE || 'fullchain.pem'),
-  maxHeaderSize: MAX_HEADER_SIZE
+  maxHeaderSize: maxHeaderSize
 };
 
 //Whether to enable the client certificate feature
