@@ -1,3 +1,6 @@
+## Version `38` - 2025-10-24
+* Add a `MAX_HEADER_SIZE` environment variable to set the maximum header size. The default is 1MB. 
+
 ## Version `37` - 2025-05-10
 * The `LOG_IGNORE_PATH` environment variable now takes a regex, so you can ignore multiple paths.
 
