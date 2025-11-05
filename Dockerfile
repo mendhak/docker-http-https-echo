@@ -29,7 +29,7 @@ LABEL \
     org.opencontainers.image.licenses="MIT"
 WORKDIR /app
 COPY --from=build /app /app
-ENV HTTP_PORT=8080 HTTPS_PORT=8443
+ENV HTTP_PORT=8080 HTTPS_PORT=8443 HTTP_HOST=0.0.0.0 HTTPS_HOST=0.0.0.0
 EXPOSE $HTTP_PORT $HTTPS_PORT
 USER 1000
 CMD ["node", "./index.js"]
