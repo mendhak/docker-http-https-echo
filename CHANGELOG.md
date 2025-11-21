@@ -1,3 +1,6 @@
+## Version `39` - 2025-11-21
+* Removed `/usr/local/lib/node_modules` from image to reduce CVE footprint
+
 ## Version `38` - 2025-10-24
 * Add a `MAX_HEADER_SIZE` environment variable to set the maximum header size. The default is 1MB. 
 
