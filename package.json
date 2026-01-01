@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "concat-stream": "^2.0.0",
-    "express": "^4.21.2",
+    "express": "^4.22.1",
     "express-prom-bundle": "^8.0.0",
     "jsonwebtoken": "^9.0.0",
     "morgan": "^1.10.1"
