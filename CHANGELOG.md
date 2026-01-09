@@ -1,3 +1,7 @@
+## Version `40` - 2026-01-09
+* Renamed privkey.pem to testpk.pem so Trivy doesn't flag a false positive by [willyguggenheim](https://github.com/mendhak/docker-http-https-echo/pull/89) 
+* Updated dependencies in package.json
+
 ## Version `39` - 2025-11-21
 * Removed `/usr/local/lib/node_modules` from image to reduce CVE footprint
 
