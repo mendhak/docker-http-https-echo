@@ -198,7 +198,7 @@ let httpOpts = {
 }
 
 let httpsOpts = {
-  key: require('fs').readFileSync(process.env.HTTPS_KEY_FILE || 'privkey.pem'),
+  key: require('fs').readFileSync(process.env.HTTPS_KEY_FILE || 'testpk.pem'),
   cert: require('fs').readFileSync(process.env.HTTPS_CERT_FILE || 'fullchain.pem'),
   maxHeaderSize: maxHeaderSize
 };

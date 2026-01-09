@@ -8,7 +8,7 @@ RUN set -ex \
   && npm install --production \
   # Generate SSL-certificate (for HTTPS)
   && apk --no-cache add openssl \
-  && openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes -keyout privkey.pem -out fullchain.pem \
+  && openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes -keyout testpk.pem -out fullchain.pem \
        -subj "/C=GB/ST=London/L=London/O=Mendhak/CN=my.example.com" \
        -addext "subjectAltName=DNS:my.example.com,DNS:my.example.net,IP:192.168.50.108,IP:127.0.0.1" \
   && apk del openssl \
@@ -17,7 +17,7 @@ RUN set -ex \
   && rm package* \
   # Correct User's file access
   && chown -R node:node /app \
-  && chmod +r /app/privkey.pem
+  && chmod +r /app/testpk.pem
 
 FROM node:22-alpine AS final
 LABEL \

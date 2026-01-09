@@ -78,7 +78,7 @@ With docker compose, this would be:
 
 ## Use your own certificates
 
-The certificates are at `/app/fullchain.pem` and `/app/privkey.pem`.
+The certificates are at `/app/fullchain.pem` and `/app/testpk.pem`.
 
 You can use volume mounting to substitute the certificate and private key with your own.
 
@@ -89,7 +89,7 @@ You can use volume mounting to substitute the certificate and private key with y
             - "8443:8443"
         volumes:
             - /etc/ssl/certs/ssl-cert-snakeoil.pem:/app/fullchain.pem
-            - /etc/ssl/private/ssl-cert-snakeoil.key:/app/privkey.pem
+            - /etc/ssl/private/ssl-cert-snakeoil.key:/app/testpk.pem
 
 You can use the environment variables `HTTPS_CERT_FILE` and `HTTPS_KEY_FILE` to define the location of existing certificate and private key inside container.
 
@@ -265,7 +265,7 @@ To get client certificate details in the response body, start the container with
 For example, invoke using curl, passing a certificate and key.
 
 ```bash
-curl -k --cert cert.pem --key privkey.pem  https://localhost:8443/
+curl -k --cert cert.pem --key testpk.pem  https://localhost:8443/
 ```
 
 The response body will contain details about the client certificate passed in.
@@ -273,7 +273,7 @@ The response body will contain details about the client certificate passed in.
 If you browse to https://localhost:8443/ in Firefox, you won't get prompted to supply a client certificate unless you have [an imported certificate by the same issuer as the server](https://superuser.com/questions/1043415/firefox-doesnt-ask-me-for-a-certificate-when-visiting-a-site-that-needs-one). If you need browser prompting to work, you'll need to follow the 'use your own certificates' section.  Firefox needs the imported certificate to be in a PKCS12 format, so if you have a certificate and key already, you can combine them using
 
 ```bash
-openssl pkcs12 -export -in cert.pem -inkey privkey.pem -out certpkcs12.pfx
+openssl pkcs12 -export -in cert.pem -inkey testpk.pem -out certpkcs12.pfx
 ```
 
 ## Preserve the case of headers in response body
