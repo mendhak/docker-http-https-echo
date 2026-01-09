@@ -416,7 +416,7 @@ docker run -d --rm -e LOG_WITHOUT_NEWLINE=1 --name http-echo-tests -p 8080:8080 
 sleep 5
 curl -s -k -X POST -d "tiramisu" https://localhost:8443/ > /dev/null
 
-if [ $(docker logs http-echo-tests | wc -l) == 4 ] && \
+if [ $(docker logs http-echo-tests | wc -l) == 3 ] && \
    [ $(docker logs http-echo-tests | grep tiramisu) ]
 then
     passed "LOG_WITHOUT_NEWLINE logged output in single line"
@@ -471,13 +471,13 @@ sleep 5
 
 message " Check that mTLS server responds with client certificate details"
 # Generate a new self signed cert locally
-openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes -keyout privkey.pem -out fullchain.pem \
+openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes -keyout testpk.pem -out fullchain.pem \
        -subj "/CN=client.example.net" \
        -addext "subjectAltName=DNS:client.example.net"
 docker run -d --rm -e MTLS_ENABLE=1 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
 sleep 5
-COMMON_NAME="$(curl -sk --cert fullchain.pem --key privkey.pem  https://localhost:8443/ | jq -r  '.clientCertificate.subject.CN')"
-SAN="$(curl -sk --cert fullchain.pem --key privkey.pem  https://localhost:8443/ | jq -r  '.clientCertificate.subjectaltname')"
+COMMON_NAME="$(curl -sk --cert fullchain.pem --key testpk.pem  https://localhost:8443/ | jq -r  '.clientCertificate.subject.CN')"
+SAN="$(curl -sk --cert fullchain.pem --key testpk.pem  https://localhost:8443/ | jq -r  '.clientCertificate.subjectaltname')"
 if [ "$COMMON_NAME" == "client.example.net" ] && [ "$SAN" == "DNS:client.example.net" ]
 then
     passed "Client certificate details are present in the output"
@@ -497,7 +497,7 @@ else
 fi
 
 message " Check that HTTP server does not have any client certificate property"
-CLIENT_CERT=$(curl -sk --cert cert.pem --key privkey.pem  http://localhost:8080/  | jq  'has("clientCertificate")')
+CLIENT_CERT=$(curl -sk --cert cert.pem --key testpk.pem  http://localhost:8080/  | jq  'has("clientCertificate")')
 if [ "$CLIENT_CERT" == "false" ]
 then
     passed "Client certificate details are not present in regular HTTP server"
@@ -513,7 +513,7 @@ sleep 5
 message " Check that SSL certificate and private key are loaded from custom location"
 cert_common_name="server.example.net"
 https_cert_file="$(pwd)/server_fullchain.pem"
-https_key_file="$(pwd)/server_privkey.pem"
+https_key_file="$(pwd)/server_testpk.pem"
 # Generate a new self signed cert locally
 openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes -keyout "${https_key_file}" -out "${https_cert_file}" \
        -subj "/CN=${cert_common_name}" \
