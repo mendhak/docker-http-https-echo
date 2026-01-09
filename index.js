@@ -1,4 +1,6 @@
 const os = require('os');
+const fs = require('fs');
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const http = require('http')
 const https = require('https')
@@ -8,6 +10,207 @@ const concat = require('concat-stream');
 const { promisify } = require('util');
 const promBundle = require("express-prom-bundle");
 const zlib = require("zlib");
+
+// Get HTTPS credentials - either from files or generate self-signed in memory
+function getHttpsCredentials() {
+  const keyFile = process.env.HTTPS_KEY_FILE;
+  const certFile = process.env.HTTPS_CERT_FILE;
+
+  // If both files are specified and exist, use them
+  if (keyFile && certFile) {
+    try {
+      return {
+        key: fs.readFileSync(keyFile),
+        cert: fs.readFileSync(certFile)
+      };
+    } catch (err) {
+      console.log(`Could not read cert files (${err.message}), generating self-signed certificate...`);
+    }
+  }
+
+  // Try default file locations for backward compatibility
+  try {
+    return {
+      key: fs.readFileSync('privkey.pem'),
+      cert: fs.readFileSync('fullchain.pem')
+    };
+  } catch (err) {
+    // Generate self-signed certificate in memory
+    console.log('Generating self-signed certificate in memory...');
+    return generateSelfSignedCertificate();
+  }
+}
+
+// Generate a self-signed certificate entirely in memory
+function generateSelfSignedCertificate() {
+  const { privateKey } = crypto.generateKeyPairSync('rsa', {
+    modulusLength: 2048,
+    publicKeyEncoding: { type: 'spki', format: 'pem' },
+    privateKeyEncoding: { type: 'pkcs8', format: 'pem' }
+  });
+
+  const publicKey = crypto.createPublicKey(crypto.createPrivateKey(privateKey));
+
+  // Get the public key in DER format for the certificate
+  const publicKeyDer = publicKey.export({ type: 'spki', format: 'der' });
+
+  // Create certificate structure
+  const serialNumber = crypto.randomBytes(8);
+  const now = new Date();
+  const notBefore = now;
+  const notAfter = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
+
+  // Build ASN.1 TBSCertificate
+  const tbsCert = buildTBSCertificate(serialNumber, notBefore, notAfter, publicKeyDer);
+
+  // Sign the TBSCertificate
+  const sign = crypto.createSign('SHA256');
+  sign.update(tbsCert);
+  const signature = sign.sign(privateKey);
+
+  // Build the full certificate
+  const cert = buildCertificate(tbsCert, signature);
+
+  // Convert to PEM
+  const certBase64 = cert.toString('base64');
+  const certPem = '-----BEGIN CERTIFICATE-----\n' +
+    certBase64.match(/.{1,64}/g).join('\n') +
+    '\n-----END CERTIFICATE-----\n';
+
+  return { key: privateKey, cert: certPem };
+}
+
+// ASN.1 DER encoding helpers
+function encodeLength(len) {
+  if (len < 128) return Buffer.from([len]);
+  if (len < 256) return Buffer.from([0x81, len]);
+  if (len < 65536) return Buffer.from([0x82, (len >> 8) & 0xff, len & 0xff]);
+  throw new Error('Length too long');
+}
+
+function encodeSequence(contents) {
+  const len = encodeLength(contents.length);
+  return Buffer.concat([Buffer.from([0x30]), len, contents]);
+}
+
+function encodeInteger(buf) {
+  // Add leading zero if high bit is set
+  if (buf[0] & 0x80) {
+    buf = Buffer.concat([Buffer.from([0x00]), buf]);
+  }
+  const len = encodeLength(buf.length);
+  return Buffer.concat([Buffer.from([0x02]), len, buf]);
+}
+
+function encodeOID(oid) {
+  const parts = oid.split('.').map(Number);
+  const bytes = [parts[0] * 40 + parts[1]];
+  for (let i = 2; i < parts.length; i++) {
+    let val = parts[i];
+    if (val < 128) {
+      bytes.push(val);
+    } else {
+      const encoded = [];
+      while (val > 0) {
+        encoded.unshift((val & 0x7f) | (encoded.length ? 0x80 : 0));
+        val >>= 7;
+      }
+      bytes.push(...encoded);
+    }
+  }
+  const buf = Buffer.from(bytes);
+  return Buffer.concat([Buffer.from([0x06]), encodeLength(buf.length), buf]);
+}
+
+function encodeUTCTime(date) {
+  const str = date.toISOString().replace(/[-:T]/g, '').slice(2, 14) + 'Z';
+  const buf = Buffer.from(str, 'ascii');
+  return Buffer.concat([Buffer.from([0x17]), encodeLength(buf.length), buf]);
+}
+
+function encodePrintableString(str) {
+  const buf = Buffer.from(str, 'ascii');
+  return Buffer.concat([Buffer.from([0x13]), encodeLength(buf.length), buf]);
+}
+
+function encodeSet(contents) {
+  const len = encodeLength(contents.length);
+  return Buffer.concat([Buffer.from([0x31]), len, contents]);
+}
+
+function encodeBitString(buf) {
+  // Prepend with 0x00 to indicate no unused bits
+  const content = Buffer.concat([Buffer.from([0x00]), buf]);
+  return Buffer.concat([Buffer.from([0x03]), encodeLength(content.length), content]);
+}
+
+function buildRDN(oid, value) {
+  const attrType = encodeOID(oid);
+  const attrValue = encodePrintableString(value);
+  const attrTypeAndValue = encodeSequence(Buffer.concat([attrType, attrValue]));
+  return encodeSet(attrTypeAndValue);
+}
+
+function buildName() {
+  // CN=my.example.com,O=Mendhak,L=London,ST=London,C=GB
+  const cn = buildRDN('2.5.4.3', 'my.example.com');  // commonName
+  const o = buildRDN('2.5.4.10', 'Mendhak');         // organizationName
+  const l = buildRDN('2.5.4.7', 'London');           // localityName
+  const st = buildRDN('2.5.4.8', 'London');          // stateOrProvinceName
+  const c = buildRDN('2.5.4.6', 'GB');               // countryName
+  return encodeSequence(Buffer.concat([c, st, l, o, cn]));
+}
+
+function buildValidity(notBefore, notAfter) {
+  return encodeSequence(Buffer.concat([
+    encodeUTCTime(notBefore),
+    encodeUTCTime(notAfter)
+  ]));
+}
+
+function buildAlgorithmIdentifier() {
+  // sha256WithRSAEncryption
+  const oid = encodeOID('1.2.840.113549.1.1.11');
+  const params = Buffer.from([0x05, 0x00]); // NULL
+  return encodeSequence(Buffer.concat([oid, params]));
+}
+
+function buildTBSCertificate(serialNumber, notBefore, notAfter, publicKeyDer) {
+  // Version (v3 = 2)
+  const version = Buffer.concat([
+    Buffer.from([0xa0, 0x03, 0x02, 0x01, 0x02])
+  ]);
+
+  const serial = encodeInteger(serialNumber);
+  const signatureAlg = buildAlgorithmIdentifier();
+  const issuer = buildName();
+  const validity = buildValidity(notBefore, notAfter);
+  const subject = buildName();
+
+  // SubjectPublicKeyInfo is already in DER format
+  const subjectPublicKeyInfo = publicKeyDer;
+
+  return encodeSequence(Buffer.concat([
+    version,
+    serial,
+    signatureAlg,
+    issuer,
+    validity,
+    subject,
+    subjectPublicKeyInfo
+  ]));
+}
+
+function buildCertificate(tbsCert, signature) {
+  const signatureAlg = buildAlgorithmIdentifier();
+  const signatureValue = encodeBitString(signature);
+
+  return encodeSequence(Buffer.concat([
+    tbsCert,
+    signatureAlg,
+    signatureValue
+  ]));
+}
 
 const {
   PROMETHEUS_ENABLED = false,
@@ -40,7 +243,15 @@ if(PROMETHEUS_ENABLED === 'true') {
 }
 
 if(process.env.DISABLE_REQUEST_LOGS !== 'true'){
-  app.use(morgan('combined'));
+  app.use(morgan('combined', {
+    skip: function (req, res) {
+      // Skip logging for paths matching LOG_IGNORE_PATH
+      if (process.env.LOG_IGNORE_PATH && new RegExp(process.env.LOG_IGNORE_PATH).test(req.path)) {
+        return true;
+      }
+      return false;
+    }
+  }));
 }
 
 app.use(function(req, res, next){
@@ -197,9 +408,10 @@ let httpOpts = {
   maxHeaderSize: maxHeaderSize
 }
 
+const httpsCredentials = getHttpsCredentials();
 let httpsOpts = {
-  key: require('fs').readFileSync(process.env.HTTPS_KEY_FILE || 'privkey.pem'),
-  cert: require('fs').readFileSync(process.env.HTTPS_CERT_FILE || 'fullchain.pem'),
+  key: httpsCredentials.key,
+  cert: httpsCredentials.cert,
   maxHeaderSize: maxHeaderSize
 };
 
