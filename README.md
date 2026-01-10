@@ -155,6 +155,16 @@ You can disable new lines in the log output by setting the environment variable 
 docker run -e LOG_WITHOUT_NEWLINE=true -p 8080:8080 -p 8443:8443 --rm -t mendhak/http-https-echo:39
 ```
 
+## Log to standard error
+
+By default the log output is always sent to standard out. If you want to vary the log output format you can set `LOG_TO_STANDARD_ERROR` which combined with `x-set-response-status-code` will log anything with a status code between 400 and 599, to standard error.
+
+```bash
+docker run -e LOG_TO_STANDARD_ERROR=true -p 8080:8080 -p 8443:8443 --rm -t mendhak/http-https-echo:31
+
+curl -v -H "x-set-response-status-code: 401" http://localhost:8080/
+```
+
 ## Send an empty response
 
 You can disable the JSON output in the response by setting the environment variable `ECHO_BACK_TO_CLIENT`. For example,
