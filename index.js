@@ -55,14 +55,10 @@ app.use(function(req, res, next){
     next();
   }));
 });
+
 //Handle all paths
 app.all('*', (req, res) => {
-  
-  if(process.env.OVERRIDE_RESPONSE_BODY_FILE_PATH){
-    // Path is relative to current directory
-    res.sendFile(process.env.OVERRIDE_RESPONSE_BODY_FILE_PATH, { root : __dirname});
-    return;
-  }
+
 
   const echo = {
     path: req.path,
@@ -90,17 +86,17 @@ app.all('*', (req, res) => {
     let newHeaders = {...req.headers};
 
     // req.headers is in lowercase, processed, deduplicated. req.rawHeaders is not.
-    // Match on the preserved case of the header name, populate newHeaders with preserved case and processed value. 
+    // Match on the preserved case of the header name, populate newHeaders with preserved case and processed value.
     for (let i = 0; i < req.rawHeaders.length; i += 2) {
       let preservedHeaderName = req.rawHeaders[i];
       if (preservedHeaderName == preservedHeaderName.toLowerCase()) { continue; }
-  
+
       newHeaders[preservedHeaderName] = req.header(preservedHeaderName);
       delete newHeaders[preservedHeaderName.toLowerCase()];
     }
     echo.headers = newHeaders;
   }
-  
+
 
   //Add client certificate details to the output, if present
   //This only works if `requestCert` is true when starting the server.
@@ -135,17 +131,22 @@ app.all('*', (req, res) => {
   }
 
   //Set the status code to what the user wants
-  const setResponseStatusCode = parseInt(req.headers["x-set-response-status-code"] || req.query["x-set-response-status-code"], 10)
+  const setResponseStatusCode = parseInt(req.headers["x-set-response-status-code"] || req.query["x-set-response-status-code"] || process.env.RESPONSE_STATUS_CODE, 10)
   if (100 <= setResponseStatusCode && setResponseStatusCode < 600) {
     res.status(setResponseStatusCode)
   }
 
   //Delay the response for a user defined time
-  const sleepTime = parseInt(req.headers["x-set-response-delay-ms"] || req.query["x-set-response-delay-ms"], 0)
+  const sleepTime = parseInt(req.headers["x-set-response-delay-ms"]
+    || req.query["x-set-response-delay-ms"]
+    || process.env.RESPONSE_DELAY_MS
+    || "0")
   sleep(sleepTime).then(() => {
 
     //Set the response content type to what the user wants
-    const setResponseContentType = req.headers["x-set-response-content-type"] || req.query["x-set-response-content-type"];
+    const setResponseContentType = req.headers["x-set-response-content-type"]
+      || req.query["x-set-response-content-type"]
+      || process.env.RESPONSE_CONTENT_TYPE;
 
     if(setResponseContentType){
       res.contentType(setResponseContentType);
@@ -169,8 +170,17 @@ app.all('*', (req, res) => {
     if (process.env.ECHO_BACK_TO_CLIENT != undefined && process.env.ECHO_BACK_TO_CLIENT == "false"){
       res.end();
     }
+    //Ability to send an content of file as response body
+    else if (process.env.OVERRIDE_RESPONSE_BODY_FILE_PATH){
+      // Path is relative to current directory
+      res.sendFile(process.env.OVERRIDE_RESPONSE_BODY_FILE_PATH, { root : __dirname});
+    }
+    //Ability to send an content of environment variable as response body
+    else if (process.env.OVERRIDE_RESPONSE_BODY){
+      res.send(process.env.OVERRIDE_RESPONSE_BODY);
+    }
     //Ability to send just the request body in the response, nothing else
-    else if ("response_body_only" in req.query && req.query["response_body_only"] == "true") {
+    else if ((req.query["response_body_only"] === "true") || (process.env.RESPONSE_BODY_ONLY === "true")) {
       res.send(req.body);
     }
     //Normal behavior, send everything back
