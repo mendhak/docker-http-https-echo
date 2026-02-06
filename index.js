@@ -212,9 +212,9 @@ if(process.env.MTLS_ENABLE){
     }
 }
 
-var httpServer = http.createServer(httpOpts, app).listen(process.env.HTTP_PORT || 8080);
-var httpsServer = https.createServer(httpsOpts,app).listen(process.env.HTTPS_PORT || 8443);
-console.log(`Listening on ports ${process.env.HTTP_PORT || 8080} for http, and ${process.env.HTTPS_PORT || 8443} for https.`);
+var httpServer = http.createServer(httpOpts, app).listen(process.env.HTTP_PORT || 8080, process.env.HTTP_HOST || '0.0.0.0');
+var httpsServer = https.createServer(httpsOpts,app).listen(process.env.HTTPS_PORT || 8443, process.env.HTTPS_HOST || '0.0.0.0');
+console.log(`Listening on ${process.env.HTTP_HOST || '0.0.0.0'}:${process.env.HTTP_PORT || 8080} for http, and ${process.env.HTTPS_HOST || '0.0.0.0'}:${process.env.HTTPS_PORT || 8443} for https.`);
 
 let calledClose = false;
 
