@@ -28,7 +28,7 @@ LABEL \
     org.opencontainers.image.source="https://github.com/mendhak/docker-http-https-echo" \
     org.opencontainers.image.licenses="MIT"
 WORKDIR /app
-RUN rm -rf /usr/local/lib/node_modules
+RUN apk upgrade --no-cache && rm -rf /usr/local/lib/node_modules
 COPY --from=build /app /app
 ENV HTTP_PORT=8080 HTTPS_PORT=8443
 EXPOSE $HTTP_PORT $HTTPS_PORT
