@@ -653,6 +653,22 @@ message " Stop containers "
 docker stop http-echo-tests
 sleep 5
 
+message " Start container with different hostnames "
+docker run -d --rm -e HTTP_HOST=127.0.0.1 -e HTTPS_HOST=127.0.0.1 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
+sleep 5
+REQUEST=$(curl -s -k http://127.0.0.1:8080/hello-world)
+if [[ "$REQUEST" == "Hello World" ]]
+then
+    passed "Different hostnames test passed."
+else
+    failed "Different hostnames test failed."
+    exit 1
+fi
+
+message " Stop containers "
+docker stop http-echo-tests
+sleep 5
+
 popd
 rm -rf testarea
 message "DONE"
