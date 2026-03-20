@@ -301,6 +301,47 @@ You can use the `MAX_HEADER_SIZE` environment variable to set a maximum header s
 docker run -d --rm -e MAX_HEADER_SIZE=1000  -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:39
 ```
 
+## Cookies and Signed Cookies
+
+Make a request with a `Cookie` header and the response will include the cookies:
+
+```bash
+docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:39
+```
+
+Then make a request with a cookie header:
+
+```bash
+curl -s http://localhost:8080/ -H "Cookie: foo=bar; baz=qux" 
+```
+
+To enable signed cookie support, set the `COOKIE_SECRET` environment variable. Signed cookies appear in the `signedCookies` section of the response:
+
+```bash
+docker run -d --rm -e COOKIE_SECRET=mysecretkey123 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:39
+```
+
+Now you need to generate a signed cookie, and send it in the header. Here's a convenience node snippet:
+
+```bash
+
+SIGNED_COOKIE=$(node -e "var crypto = require('crypto');
+
+function sign(val, secret){
+  return val + '.' + crypto
+    .createHmac('sha256', secret)
+    .update(val)
+    .digest('base64')
+    .replace(/=+$/, '');
+};
+
+console.log(sign('my-value','mysecretkey123'));")
+
+curl -s http://localhost:8080/ -H "Cookie: mysigned=s:$SIGNED_COOKIE" | jq '.signedCookies'
+```
+
+Notice the `s:` prefix in the cookie value, that is important. 
+
 
 ## Prometheus Metrics
 
