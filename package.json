@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "concat-stream": "^2.0.0",
+    "cookie-parser": "^1.4.6",
     "express": "^4.22.0",
     "express-prom-bundle": "^8.0.0",
     "jsonwebtoken": "^9.0.0",

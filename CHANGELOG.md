@@ -1,3 +1,6 @@
+## Version `40` - 2026-03-20
+* Echo back cookies and signed cookies
+
 ## Version `39` - 2026-01-09
 * Renamed privkey.pem to testpk.pem so Trivy doesn't flag a false positive by [willyguggenheim](https://github.com/mendhak/docker-http-https-echo/pull/89) 
 * Updated dependencies in package.json

@@ -653,6 +653,60 @@ message " Stop containers "
 docker stop http-echo-tests
 sleep 5
 
+message " Start container with signed cookies support "
+# Set cookie secret for signing/verifying cookies
+docker run -d --rm -e COOKIE_SECRET=mysecretkey123 \
+    --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
+sleep 5
+
+SIGNED_COOKIE=$(node -e "var crypto = require('crypto');
+
+function sign(val, secret){
+  return val + '.' + crypto
+    .createHmac('sha256', secret)
+    .update(val)
+    .digest('base64')
+    .replace(/=+$/, '');
+};
+
+console.log(sign('my-value','mysecretkey123'));")
+
+
+RESPONSE=$(curl -s http://localhost:8080/ -H "Cookie: mysigned=s:${SIGNED_COOKIE}")
+if [ $(echo $RESPONSE | jq -r '.signedCookies.mysigned') == 'my-value' ]
+then
+    passed "Signed cookie test passed."
+else
+    failed "Signed cookie test failed."
+    echo $RESPONSE | jq
+    exit 1
+fi
+
+message " Stop containers "
+docker stop http-echo-tests
+sleep 5
+
+
+message " Check that regular cookies are returned in response "
+docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
+sleep 5
+
+
+RESPONSE=$(curl -s http://localhost:8080/ -H "Cookie: foo=bar; baz=qux")
+if [ $(echo $RESPONSE | jq -r '.cookies.foo') == 'bar' ] && \
+   [ $(echo $RESPONSE | jq -r '.cookies.baz') == 'qux' ]
+then
+    passed "Cookies returned in response test passed."
+else
+    failed "Cookies returned in response test failed."
+    echo $RESPONSE | jq
+    exit 1
+fi
+
+message " Stop containers "
+docker stop http-echo-tests
+sleep 5
+
 popd
 rm -rf testarea
 message "DONE"

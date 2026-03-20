@@ -4,6 +4,7 @@ const http = require('http')
 const https = require('https')
 const morgan = require('morgan');
 const express = require('express')
+const cookieParser = require('cookie-parser');
 const concat = require('concat-stream');
 const { promisify } = require('util');
 const promBundle = require("express-prom-bundle");
@@ -38,6 +39,8 @@ app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
 if(PROMETHEUS_ENABLED === 'true') {
   app.use(metricsMiddleware);
 }
+
+app.use(cookieParser(process.env.COOKIE_SECRET || 'examplekey'));
 
 if(process.env.DISABLE_REQUEST_LOGS !== 'true'){
   app.use(morgan('combined'));
@@ -76,6 +79,7 @@ app.all('*', (req, res) => {
     ips: req.ips,
     protocol: req.protocol,
     query: req.query,
+    signedCookies: req.signedCookies,
     subdomains: req.subdomains,
     xhr: req.xhr,
     os: {
