@@ -5,7 +5,7 @@ set -euo pipefail
 function message {
     echo ""
     echo "---------------------------------------------------------------"
-    echo $1
+    echo "$1"
     echo "---------------------------------------------------------------"
 }
 
@@ -14,11 +14,11 @@ RED=$(echo -en '\033[01;31m')
 GREEN=$(echo -en '\033[01;32m')
 
 function failed {
-    echo ${RED}✗$1${RESTORE}
+    echo "${RED}✗${1}${RESTORE}"
 }
 
 function passed {
-    echo ${GREEN}✓$1${RESTORE}
+    echo "${GREEN}✓${1}${RESTORE}"
 }
 
 wait_for_ready() {
@@ -52,16 +52,16 @@ cleanup() {
 
 trap cleanup EXIT
 
-if ! [ -x "$(command -v jq)" ]; then
+if ! command -v jq >/dev/null 2>&1; then
     message "JQ not installed. Installing..."
     sudo apt -y install jq
 fi
 
 message " Check if we're in Github Actions or local run "
-if [ -n "${GITHUB_ACTIONS:-}" ]; then
+if [[ -n "${GITHUB_ACTIONS:-}" ]]; then
     echo " Github Actions. Image should already be built."
     docker images
-    if [ -z "$(docker images -q mendhak/http-https-echo:testing 2> /dev/null)" ]; then
+    if [[ -z "$(docker images -q mendhak/http-https-echo:testing 2> /dev/null)" ]]; then
         echo "Docker image mendhak/http-https-echo:testing not found. Exiting."
         exit 1
     fi
@@ -85,10 +85,10 @@ wait_for_ready
 
 message " Make http(s) request, and test the path, method, header and status code. "
 REQUEST=$(curl -s -k -X PUT -H "Arbitrary:Header" -d aaa=bbb 'https://localhost:8443/hello-world?ccc=ddd&myquery=98765')
-if [ "$(echo "$REQUEST" | jq -r '.path')" == '/hello-world' ] && \
-   [ "$(echo "$REQUEST" | jq -r '.method')" == 'PUT' ] && \
-   [ "$(echo "$REQUEST" | jq -r '.query.myquery')" == '98765' ] && \
-   [ "$(echo "$REQUEST" | jq -r '.headers.arbitrary')" == 'Header' ]; then
+if [[ "$(echo "$REQUEST" | jq -r '.path')" == '/hello-world' ]] && \
+    [[ "$(echo "$REQUEST" | jq -r '.method')" == 'PUT' ]] && \
+    [[ "$(echo "$REQUEST" | jq -r '.query.myquery')" == '98765' ]] && \
+    [[ "$(echo "$REQUEST" | jq -r '.headers.arbitrary')" == 'Header' ]]; then
     passed "HTTPS request passed."
 else
     failed "HTTPS request failed."
@@ -97,7 +97,7 @@ else
 fi
 REQUEST_WITH_STATUS_CODE=$(curl -s -k -o /dev/null -w "%{http_code}" -H "x-set-response-status-code: 404" https://localhost:8443/hello-world)
 REQUEST_WITH_STATUS_CODE_V=$(curl -v -k -o /dev/null -w "%{http_code}" -H "x-set-response-status-code: 404" https://localhost:8443/hello-world)
-if [ "$REQUEST_WITH_STATUS_CODE" = "404" ]; then
+if [[ "$REQUEST_WITH_STATUS_CODE" == "404" ]]; then
     passed "HTTPS status code header passed."
 else
     failed "HTTPS status code header failed."
@@ -107,7 +107,7 @@ fi
 
 REQUEST_WITH_STATUS_CODE=$(curl -s -k -o /dev/null -w "%{http_code}" https://localhost:8443/status/test?x-set-response-status-code=419)
 REQUEST_WITH_STATUS_CODE_V=$(curl -v -k -o /dev/null -w "%{http_code}" https://localhost:8443/hello-world?x-set-response-status-code=419)
-if [ "$REQUEST_WITH_STATUS_CODE" = "419" ]; then
+if [[ "$REQUEST_WITH_STATUS_CODE" == "419" ]]; then
     passed "HTTPS status code querystring passed."
 else
     failed "HTTPS status code querystring failed."
@@ -162,9 +162,9 @@ else
 fi
 
 REQUEST=$(curl -s -X PUT -H "Arbitrary:Header" -d aaa=bbb http://localhost:8080/hello-world)
-if [ "$(echo "$REQUEST" | jq -r '.path')" == '/hello-world' ] && \
-   [ "$(echo "$REQUEST" | jq -r '.method')" == 'PUT' ] && \
-   [ "$(echo "$REQUEST" | jq -r '.headers.arbitrary')" == 'Header' ]; then
+if [[ "$(echo "$REQUEST" | jq -r '.path')" == '/hello-world' ]] && \
+    [[ "$(echo "$REQUEST" | jq -r '.method')" == 'PUT' ]] && \
+    [[ "$(echo "$REQUEST" | jq -r '.headers.arbitrary')" == 'Header' ]]; then
     passed "HTTP request with arbitrary header passed."
 else
     failed "HTTP request with arbitrary header failed."
@@ -174,7 +174,7 @@ fi
 
 message " Make JSON request, and test that json is in the output. "
 REQUEST=$(curl -s -X POST -H "Content-Type: application/json" -d '{"a":"b"}' http://localhost:8080/)
-if [ "$(echo "$REQUEST" | jq -r '.json.a')" == 'b' ]; then
+if [[ "$(echo "$REQUEST" | jq -r '.json.a')" == 'b' ]]; then
     passed "JSON test passed."
 else
     failed "JSON test failed."
@@ -185,7 +185,7 @@ fi
 
 message " Make JSON request with gzip Content-Encoding, and test that json is in the output. "
 REQUEST=$(echo -n '{"a":"b"}' | gzip | curl -s -X POST -H "Content-Encoding: gzip" -H "Content-Type: application/json" --data-binary @- http://localhost:8080/)
-if [ "$(echo "$REQUEST" | jq -r '.json.a')" == 'b' ]; then
+if [[ "$(echo "$REQUEST" | jq -r '.json.a')" == 'b' ]]; then
     passed "JSON test passed."
 else
     failed "JSON test failed."
@@ -194,7 +194,7 @@ else
 fi
 
 REQUEST=$(curl -s -X POST -H "Content-Type: application/json" -d 'not-json' http://localhost:8080)
-if [ "$(echo "$REQUEST" | jq -r '.json')" == 'null' ]; then
+if [[ "$(echo "$REQUEST" | jq -r '.json')" == 'null' ]]; then
     passed "JSON with Invalid Body test passed."
 else
     failed "JSON with Invalid Body test failed."
@@ -214,7 +214,7 @@ message " Make request with a header within limit."
 LARGE_HEADER_VALUE=$(head -c 600 </dev/urandom | base64 | tr -d '\n')
 REQUEST=$(curl -s -k -H "Large-Header: $LARGE_HEADER_VALUE" https://localhost:8443/)
 
-if [ "$(echo "$REQUEST" | jq -r '.headers."large-header"')" == "$LARGE_HEADER_VALUE" ]; then
+if [[ "$(echo "$REQUEST" | jq -r '.headers."large-header"')" == "$LARGE_HEADER_VALUE" ]]; then
     passed "Large header test passed."
 else
     failed "Large header test failed."
@@ -244,9 +244,9 @@ wait_for_ready
 
 message " Make http(s) request, and test the path, method and header. "
 REQUEST=$(curl -s -k -X PUT -H "Arbitrary:Header" -d aaa=bbb https://localhost:8443/hello-world)
-if [ "$(echo "$REQUEST" | jq -r '.path')" == '/hello-world' ] && \
-   [ "$(echo "$REQUEST" | jq -r '.method')" == 'PUT' ] && \
-   [ "$(echo "$REQUEST" | jq -r '.headers.arbitrary')" == 'Header' ]; then
+if [[ "$(echo "$REQUEST" | jq -r '.path')" == '/hello-world' ]] && \
+    [[ "$(echo "$REQUEST" | jq -r '.method')" == 'PUT' ]] && \
+    [[ "$(echo "$REQUEST" | jq -r '.headers.arbitrary')" == 'Header' ]]; then
     passed "HTTPS request passed."
 else
     failed "HTTPS request failed."
@@ -255,9 +255,9 @@ else
 fi
 
 REQUEST=$(curl -s -X PUT -H "Arbitrary:Header" -d aaa=bbb http://localhost:8080/hello-world)
-if [ "$(echo "$REQUEST" | jq -r '.path')" == '/hello-world' ] && \
-   [ "$(echo "$REQUEST" | jq -r '.method')" == 'PUT' ] && \
-   [ "$(echo "$REQUEST" | jq -r '.headers.arbitrary')" == 'Header' ]; then
+if [[ "$(echo "$REQUEST" | jq -r '.path')" == '/hello-world' ]] && \
+    [[ "$(echo "$REQUEST" | jq -r '.method')" == 'PUT' ]] && \
+    [[ "$(echo "$REQUEST" | jq -r '.headers.arbitrary')" == 'Header' ]]; then
     passed "HTTP request passed."
 else
     failed "HTTP request failed."
@@ -275,12 +275,12 @@ docker run -d --rm -e ECHO_BACK_TO_CLIENT=false --name http-echo-tests -p 8080:8
 wait_for_ready
 
 REQUEST=$(curl -s -k http://localhost:8080/a/b/c)
-if [[ -z ${REQUEST} ]]
+if [[ -z "$REQUEST" ]]
 then
     passed "Response is empty."
 else
     failed "Expected empty response, but got a non-empty response."
-    echo $REQUEST
+    echo "$REQUEST"
     exit 1
 fi
 
@@ -310,9 +310,9 @@ docker run -d --rm -e JWT_HEADER=Authentication --name http-echo-tests -p 8080:8
 wait_for_ready
 
 REQUEST=$(curl -s -k -H "Authentication: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c" https://localhost:8443/ )
-if [ "$(echo "$REQUEST" | jq -r '.jwt.header.typ')" == 'JWT' ] && \
-   [ "$(echo "$REQUEST" | jq -r '.jwt.header.alg')" == 'HS256' ] && \
-   [ "$(echo "$REQUEST" | jq -r '.jwt.payload.sub')" == '1234567890' ]; then
+if [[ "$(echo "$REQUEST" | jq -r '.jwt.header.typ')" == 'JWT' ]] && \
+    [[ "$(echo "$REQUEST" | jq -r '.jwt.header.alg')" == 'HS256' ]] && \
+    [[ "$(echo "$REQUEST" | jq -r '.jwt.payload.sub')" == '1234567890' ]]; then
     passed "JWT request passed."
 else
     failed "JWT request failed."
@@ -332,8 +332,8 @@ wait_for_ready "/ping"
 curl -s -k -X POST -d "banana" https://localhost:8443/ping > /dev/null
 
 # There should be 3 lines, the "listening on...", the /ping ready test, and the /ping POST test. 
-if [ $(docker logs http-echo-tests | wc -l) == 3 ] && \
-   ! [ $(docker logs http-echo-tests | grep banana) ]
+if [[ "$(docker logs http-echo-tests | wc -l)" == 3 ]] && \
+    ! docker logs http-echo-tests | grep -q banana
 then
     passed "LOG_IGNORE_PATH ignored the /ping path"
 else
@@ -353,8 +353,8 @@ wait_for_ready "/health"
 curl -s -k -X POST -d "banana" https://localhost:8443/metrics > /dev/null
 
 # There should be 3 lines, the "listening on...", the /health ready test, and the /metrics POST test.
-if [ $(docker logs http-echo-tests | wc -l) == 3 ] && \
-   ! [ $(docker logs http-echo-tests | grep banana) ]
+if [[ "$(docker logs http-echo-tests | wc -l)" == 3 ]] && \
+    ! docker logs http-echo-tests | grep -q banana
 then
     passed "LOG_IGNORE_PATH ignored the /metrics path"
 else
@@ -366,7 +366,7 @@ fi
 # Test a positive case where the path is not ignored
 curl -s -k -X POST -d "strawberry" https://localhost:8443/veryvisible > /dev/null
 
-if [[ $(docker logs http-echo-tests | grep strawberry) ]]
+if docker logs http-echo-tests | grep -q strawberry
 then
     passed "LOG_IGNORE_PATH didn't ignore the /veryvisible path"
 else
@@ -387,8 +387,8 @@ wait_for_ready "/hello"
 curl -s -k -X POST -d "banana" https://localhost:8443/ > /dev/null
 
 # There should be 3 lines, the "listening on", the "/hello" ready test, and the POST banana test. 
-if [ $(docker logs http-echo-tests | wc -l) == 3 ] && \
-   ! [ $(docker logs http-echo-tests | grep banana) ]
+if [[ "$(docker logs http-echo-tests | wc -l)" == 3 ]] && \
+    ! docker logs http-echo-tests | grep -q banana
 then
     passed "LOG_IGNORE_PATH ignored all paths"
 else
@@ -407,7 +407,7 @@ docker run -d --rm -e DISABLE_REQUEST_LOGS=true --name http-echo-tests -p 8080:8
 wait_for_ready "/healthy"
 
 curl -s -k -X GET https://localhost:8443/strawberry > /dev/null
-if  [ $(docker logs http-echo-tests | grep -c "GET /strawberry HTTP/1.1") -eq 0 ]
+if [[ "$(docker logs http-echo-tests | grep -c "GET /strawberry HTTP/1.1")" -eq 0 ]]
 then
     passed "DISABLE_REQUEST_LOGS disabled Express HTTP logging"
 else
@@ -449,8 +449,8 @@ wait_for_ready
 curl -s -k -X POST -d "tiramisu" https://localhost:8443/ > /dev/null
 
 # There will be 4 lines, the Listening on, the / ready test and response, the POST test and response
-if [ $(docker logs http-echo-tests | wc -l) == 5 ] && \
-   [ $(docker logs http-echo-tests | grep tiramisu) ]
+if [[ "$(docker logs http-echo-tests | wc -l)" == 5 ]] && \
+    docker logs http-echo-tests | grep -q tiramisu
 then
     passed "LOG_WITHOUT_NEWLINE logged output in single line"
 else
@@ -469,7 +469,7 @@ docker run -d --name http-echo-tests --rm mendhak/http-https-echo:testing
 
 WHOAMI=$(docker exec http-echo-tests whoami)
 
-if [ "$WHOAMI" == "node" ]
+if [[ "$WHOAMI" == "node" ]]
 then
     passed "Running as non root user"
 else
@@ -491,7 +491,7 @@ curl -s http://localhost:8080 > /dev/null
 
 WHOAMI="$(docker exec http-echo-tests id -u)"
 
-if [ "$WHOAMI" == "$CONTAINER_USER" ]
+if [[ "$WHOAMI" == "$CONTAINER_USER" ]]
 then
     passed "Running as $CONTAINER_USER user"
 else
@@ -513,7 +513,7 @@ wait_for_ready
 
 COMMON_NAME="$(curl -sk --cert fullchain.pem --key testpk.pem  https://localhost:8443/ | jq -r  '.clientCertificate.subject.CN')"
 SAN="$(curl -sk --cert fullchain.pem --key testpk.pem  https://localhost:8443/ | jq -r  '.clientCertificate.subjectaltname')"
-if [ "$COMMON_NAME" == "client.example.net" ] && [ "$SAN" == "DNS:client.example.net" ]
+if [[ "$COMMON_NAME" == "client.example.net" && "$SAN" == "DNS:client.example.net" ]]
 then
     passed "Client certificate details are present in the output"
 else
@@ -523,7 +523,7 @@ fi
 
 message " Check if certificate is not passed, then client certificate details are empty"
 CLIENT_CERT="$(curl -sk https://localhost:8443/ | jq -r  '.clientCertificate')"
-if [ "$CLIENT_CERT" == "{}" ]
+if [[ "$CLIENT_CERT" == "{}" ]]
 then
     passed "Client certificate details are not present in the response"
 else
@@ -533,7 +533,7 @@ fi
 
 message " Check that HTTP server does not have any client certificate property"
 CLIENT_CERT=$(curl -sk --cert cert.pem --key testpk.pem  http://localhost:8080/  | jq  'has("clientCertificate")')
-if [ "$CLIENT_CERT" == "false" ]
+if [[ "$CLIENT_CERT" == "false" ]]
 then
     passed "Client certificate details are not present in regular HTTP server"
 else
@@ -567,7 +567,7 @@ wait_for_ready
 
 REQUEST_WITH_STATUS_CODE="$(curl -s --cacert "$(pwd)/server_fullchain.pem" -o /dev/null -w "%{http_code}" \
   --resolve "${cert_common_name}:8443:127.0.0.1" "https://${cert_common_name}:8443/hello-world")"
-if [ "${REQUEST_WITH_STATUS_CODE}" = 200 ]
+if [[ "${REQUEST_WITH_STATUS_CODE}" == 200 ]]
 then
     passed "Server certificate and private key are loaded from configured custom location"
 else
@@ -585,7 +585,7 @@ wait_for_ready
 
 RESPONSE_BODY="$(curl -sk https://localhost:8443/ | jq -r  '.env.ECHO_INCLUDE_ENV_VARS')"
 
-if [ "$RESPONSE_BODY" == "1" ]
+if [[ "$RESPONSE_BODY" == "1" ]]
 then
     passed "Environment variables present in the output"
 else
@@ -603,7 +603,7 @@ wait_for_ready
 
 RESPONSE_BODY_ENV_CHECK="$(curl -sk https://localhost:8443/ | jq 'has("env")')"
 
-if [ "$RESPONSE_BODY_ENV_CHECK" == "false" ]
+if [[ "$RESPONSE_BODY_ENV_CHECK" == "false" ]]
 then
     passed "Environment variables not present in the output by default"
 else
@@ -677,7 +677,7 @@ wait_for_removed
 
 message " Start container with a custom response body from a file "
 echo "<h1>Hello World</h1>" > test.html
-docker run -d --rm -v ${PWD}/test.html:/app/test.html --name http-echo-tests -p 8080:8080 -e OVERRIDE_RESPONSE_BODY_FILE_PATH=/test.html -t mendhak/http-https-echo:testing
+docker run -d --rm -v "${PWD}/test.html:/app/test.html" --name http-echo-tests -p 8080:8080 -e OVERRIDE_RESPONSE_BODY_FILE_PATH=/test.html -t mendhak/http-https-echo:testing
 wait_for_ready
 
 RESPONSE_BODY=$(curl -s http://localhost:8080)
@@ -713,7 +713,7 @@ console.log(sign('my-value','mysecretkey123'));")
 
 
 RESPONSE=$(curl -s http://localhost:8080/ -H "Cookie: mysigned=s:${SIGNED_COOKIE}")
-if [ "$(echo "$RESPONSE" | jq -r '.signedCookies.mysigned')" == 'my-value' ]; then
+if [[ "$(echo "$RESPONSE" | jq -r '.signedCookies.mysigned')" == 'my-value' ]]; then
     passed "Signed cookie test passed."
 else
     failed "Signed cookie test failed."
@@ -732,8 +732,8 @@ wait_for_ready
 
 
 RESPONSE=$(curl -s http://localhost:8080/ -H "Cookie: foo=bar; baz=qux")
-if [ "$(echo "$RESPONSE" | jq -r '.cookies.foo')" == 'bar' ] && \
-   [ "$(echo "$RESPONSE" | jq -r '.cookies.baz')" == 'qux' ]; then
+if [[ "$(echo "$RESPONSE" | jq -r '.cookies.foo')" == 'bar' ]] && \
+    [[ "$(echo "$RESPONSE" | jq -r '.cookies.baz')" == 'qux' ]]; then
     passed "Cookies returned in response test passed."
 else
     failed "Cookies returned in response test failed."
