@@ -23,7 +23,7 @@ function passed {
 
 wait_for_ready() {
     local check_path="${1:-/}"
-    for i in {1..30}; do
+    for i in {1..20}; do
         if curl -sf "http://localhost:8080${check_path}" >/dev/null 2>&1; then
             return 0
         fi
@@ -33,7 +33,7 @@ wait_for_ready() {
 }
 
 wait_for_removed() {
-    for i in {1..30}; do
+    for i in {1..20}; do
         if ! docker ps -aq --filter "name=http-echo-tests" | grep -q .; then
             return 0
         fi
