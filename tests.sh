@@ -562,8 +562,8 @@ docker run -d --rm \
   -e HTTPS_CERT_FILE="${container_https_cert_file}" \
   -v "${https_key_file}:${container_https_key_file}:ro,z" \
   -e HTTPS_KEY_FILE="${container_https_key_file}" \
-  --name http-echo-tests -p 8443:8443 -t mendhak/http-https-echo:testing
-sleep 5
+  --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
+wait_for_ready
 
 REQUEST_WITH_STATUS_CODE="$(curl -s --cacert "$(pwd)/server_fullchain.pem" -o /dev/null -w "%{http_code}" \
   --resolve "${cert_common_name}:8443:127.0.0.1" "https://${cert_common_name}:8443/hello-world")"
