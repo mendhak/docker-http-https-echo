@@ -34,13 +34,23 @@ wait_for_ready() {
 
 wait_for_removed() {
     for i in {1..30}; do
-        if ! docker ps -q --filter "name=http-echo-tests" | grep -q .; then
+        if ! docker ps -aq --filter "name=http-echo-tests" | grep -q .; then
             return 0
         fi
         sleep 0.5
     done
     echo "Container failed to stop"; exit 1
 }
+
+cleanup() {
+    echo "Cleaning up..."
+    docker stop http-echo-tests 2>/dev/null || true
+    docker rm http-echo-tests 2>/dev/null || true
+    popd 2>/dev/null || true
+    rm -rf testarea
+}
+
+trap cleanup EXIT
 
 if ! [ -x "$(command -v jq)" ]; then
     message "JQ not installed. Installing..."
@@ -747,6 +757,4 @@ message " Stop containers "
 docker stop http-echo-tests
 wait_for_removed
 
-popd
-rm -rf testarea
 message "DONE"
