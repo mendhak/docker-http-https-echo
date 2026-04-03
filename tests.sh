@@ -85,36 +85,33 @@ wait_for_ready
 
 message " Make http(s) request, and test the path, method, header and status code. "
 REQUEST=$(curl -s -k -X PUT -H "Arbitrary:Header" -d aaa=bbb 'https://localhost:8443/hello-world?ccc=ddd&myquery=98765')
-if [ $(echo $REQUEST | jq -r '.path') == '/hello-world' ] && \
-   [ $(echo $REQUEST | jq -r '.method') == 'PUT' ] && \
-   [ $(echo $REQUEST | jq -r '.query.myquery') == '98765' ] && \
-   [ $(echo $REQUEST | jq -r '.headers.arbitrary') == 'Header' ]
-then
+if [ "$(echo "$REQUEST" | jq -r '.path')" == '/hello-world' ] && \
+   [ "$(echo "$REQUEST" | jq -r '.method')" == 'PUT' ] && \
+   [ "$(echo "$REQUEST" | jq -r '.query.myquery')" == '98765' ] && \
+   [ "$(echo "$REQUEST" | jq -r '.headers.arbitrary')" == 'Header' ]; then
     passed "HTTPS request passed."
 else
     failed "HTTPS request failed."
-    echo $REQUEST | jq
+    echo "$REQUEST" | jq
     exit 1
 fi
 REQUEST_WITH_STATUS_CODE=$(curl -s -k -o /dev/null -w "%{http_code}" -H "x-set-response-status-code: 404" https://localhost:8443/hello-world)
 REQUEST_WITH_STATUS_CODE_V=$(curl -v -k -o /dev/null -w "%{http_code}" -H "x-set-response-status-code: 404" https://localhost:8443/hello-world)
-if [ $(echo $REQUEST_WITH_STATUS_CODE == '404') ]
-then
+if [ "$REQUEST_WITH_STATUS_CODE" = "404" ]; then
     passed "HTTPS status code header passed."
 else
     failed "HTTPS status code header failed."
-    echo $REQUEST_WITH_STATUS_CODE_V
+    echo "$REQUEST_WITH_STATUS_CODE_V"
     exit 1
 fi
 
 REQUEST_WITH_STATUS_CODE=$(curl -s -k -o /dev/null -w "%{http_code}" https://localhost:8443/status/test?x-set-response-status-code=419)
 REQUEST_WITH_STATUS_CODE_V=$(curl -v -k -o /dev/null -w "%{http_code}" https://localhost:8443/hello-world?x-set-response-status-code=419)
-if [ $(echo $REQUEST_WITH_STATUS_CODE == '419') ]
-then
+if [ "$REQUEST_WITH_STATUS_CODE" = "419" ]; then
     passed "HTTPS status code querystring passed."
 else
     failed "HTTPS status code querystring failed."
-    echo $REQUEST_WITH_STATUS_CODE_V
+    echo "$REQUEST_WITH_STATUS_CODE_V"
     exit 1
 fi
 
@@ -122,7 +119,7 @@ REQUEST_WITH_CONTENT_TYPE_HEADER=$(curl -o /dev/null -k -Ss -w "%{content_type}"
 if [[ "$REQUEST_WITH_CONTENT_TYPE_HEADER" == *"aaaa/bbbb"* ]]; then
   passed "Request with custom response type header, passed"
 else
-  echo $REQUEST_WITH_CONTENT_TYPE_HEADER
+  echo "$REQUEST_WITH_CONTENT_TYPE_HEADER"
   failed "Request with custom response type header, failed."
   exit 1
 fi
@@ -131,7 +128,7 @@ REQUEST_WITH_CONTENT_TYPE_PARAMETER=$(curl -o /dev/null -k -Ss -w "%{content_typ
 if [[ "$REQUEST_WITH_CONTENT_TYPE_PARAMETER" == *"jellyfish/cabbage"* ]]; then
   passed "Request with custom response type parameter, passed"
 else
-  echo $REQUEST_WITH_CONTENT_TYPE_PARAMETER
+  echo "$REQUEST_WITH_CONTENT_TYPE_PARAMETER"
   failed "Request with custom response type parameter, failed."
   exit 1
 fi
@@ -142,7 +139,7 @@ if [[ $(echo "$REQUEST_WITH_SLEEP_MS>5" | bc -l) == 1 ]]; then
     passed "Request header with response delay passed"
 else
     failed "Request header with response delay failed"
-    echo $REQUEST_WITH_SLEEP_MS
+    echo "$REQUEST_WITH_SLEEP_MS"
     exit 1
 fi
 
@@ -151,7 +148,7 @@ if [[ $(echo "$REQUEST_WITH_SLEEP_MS>4" | bc -l) == 1 ]]; then
     passed "Request query with response delay passed"
 else
     failed "Request query with response delay failed"
-    echo $REQUEST_WITH_SLEEP_MS
+    echo "$REQUEST_WITH_SLEEP_MS"
     exit 1
 fi
 
@@ -160,51 +157,48 @@ if [[ $(echo "$REQUEST_WITH_INVALID_SLEEP_MS<2" | bc -l) == 1 ]]; then
     passed "Request with invalid response delay passed"
 else
     failed "Request with invalid response delay failed"
-    echo $REQUEST_WITH_INVALID_SLEEP_MS
+    echo "$REQUEST_WITH_INVALID_SLEEP_MS"
     exit 1
 fi
 
 REQUEST=$(curl -s -X PUT -H "Arbitrary:Header" -d aaa=bbb http://localhost:8080/hello-world)
-if [ $(echo $REQUEST | jq -r '.path') == '/hello-world' ] && \
-   [ $(echo $REQUEST | jq -r '.method') == 'PUT' ] && \
-   [ $(echo $REQUEST | jq -r '.headers.arbitrary') == 'Header' ]
-then
+if [ "$(echo "$REQUEST" | jq -r '.path')" == '/hello-world' ] && \
+   [ "$(echo "$REQUEST" | jq -r '.method')" == 'PUT' ] && \
+   [ "$(echo "$REQUEST" | jq -r '.headers.arbitrary')" == 'Header' ]; then
     passed "HTTP request with arbitrary header passed."
 else
     failed "HTTP request with arbitrary header failed."
-    echo $REQUEST | jq
+    echo "$REQUEST" | jq
     exit 1
 fi
 
 message " Make JSON request, and test that json is in the output. "
 REQUEST=$(curl -s -X POST -H "Content-Type: application/json" -d '{"a":"b"}' http://localhost:8080/)
-if [ $(echo $REQUEST | jq -r '.json.a') == 'b' ]
-then
+if [ "$(echo "$REQUEST" | jq -r '.json.a')" == 'b' ]; then
     passed "JSON test passed."
 else
     failed "JSON test failed."
-    echo $REQUEST | jq
+    echo "$REQUEST" | jq
     exit 1
 fi
 
 
 message " Make JSON request with gzip Content-Encoding, and test that json is in the output. "
 REQUEST=$(echo -n '{"a":"b"}' | gzip | curl -s -X POST -H "Content-Encoding: gzip" -H "Content-Type: application/json" --data-binary @- http://localhost:8080/)
-if [ $(echo $REQUEST | jq -r '.json.a') == 'b' ]
-then
+if [ "$(echo "$REQUEST" | jq -r '.json.a')" == 'b' ]; then
     passed "JSON test passed."
 else
     failed "JSON test failed."
-    echo $REQUEST | jq
+    echo "$REQUEST" | jq
     exit 1
 fi
 
 REQUEST=$(curl -s -X POST -H "Content-Type: application/json" -d 'not-json' http://localhost:8080)
-if [ $(echo $REQUEST | jq -r '.json') == 'null' ]; then
+if [ "$(echo "$REQUEST" | jq -r '.json')" == 'null' ]; then
     passed "JSON with Invalid Body test passed."
 else
     failed "JSON with Invalid Body test failed."
-    echo $REQUEST | jq
+    echo "$REQUEST" | jq
     exit 1
 fi
 
@@ -220,11 +214,11 @@ message " Make request with a header within limit."
 LARGE_HEADER_VALUE=$(head -c 600 </dev/urandom | base64 | tr -d '\n')
 REQUEST=$(curl -s -k -H "Large-Header: $LARGE_HEADER_VALUE" https://localhost:8443/)
 
-if [ $(echo $REQUEST | jq -r '.headers."large-header"') == "$LARGE_HEADER_VALUE" ]; then
+if [ "$(echo "$REQUEST" | jq -r '.headers."large-header"')" == "$LARGE_HEADER_VALUE" ]; then
     passed "Large header test passed."
 else
     failed "Large header test failed."
-    echo $REQUEST | jq
+    echo "$REQUEST" | jq
     exit 1
 fi
 
@@ -232,11 +226,11 @@ message " Make request with a header exceeding limit."
 LARGE_HEADER_VALUE=$(head -c 5000 </dev/urandom | base64 | tr -d '\n')
 # Do with curl -v and look for "HTTP/1.1 431 Request Header Fields Too Large" output
 REQUEST=$(curl -v -k -H "Large-Header: $LARGE_HEADER_VALUE" https://localhost:8443/ 2>&1)
-if echo $REQUEST | grep -q "HTTP/1.1 431 Request Header Fields Too Large"; then
+if echo "$REQUEST" | grep -q "HTTP/1.1 431 Request Header Fields Too Large"; then
     passed "Large header test resulted in HTTP 431."
 else
     failed "Large header test failed."
-    echo $REQUEST
+    echo "$REQUEST"
     exit 1
 fi
 
@@ -250,26 +244,24 @@ wait_for_ready
 
 message " Make http(s) request, and test the path, method and header. "
 REQUEST=$(curl -s -k -X PUT -H "Arbitrary:Header" -d aaa=bbb https://localhost:8443/hello-world)
-if [ $(echo $REQUEST | jq -r '.path') == '/hello-world' ] && \
-   [ $(echo $REQUEST | jq -r '.method') == 'PUT' ] && \
-   [ $(echo $REQUEST | jq -r '.headers.arbitrary') == 'Header' ]
-then
+if [ "$(echo "$REQUEST" | jq -r '.path')" == '/hello-world' ] && \
+   [ "$(echo "$REQUEST" | jq -r '.method')" == 'PUT' ] && \
+   [ "$(echo "$REQUEST" | jq -r '.headers.arbitrary')" == 'Header' ]; then
     passed "HTTPS request passed."
 else
     failed "HTTPS request failed."
-    echo $REQUEST | jq
+    echo "$REQUEST" | jq
     exit 1
 fi
 
 REQUEST=$(curl -s -X PUT -H "Arbitrary:Header" -d aaa=bbb http://localhost:8080/hello-world)
-if [ $(echo $REQUEST | jq -r '.path') == '/hello-world' ] && \
-   [ $(echo $REQUEST | jq -r '.method') == 'PUT' ] && \
-   [ $(echo $REQUEST | jq -r '.headers.arbitrary') == 'Header' ]
-then
+if [ "$(echo "$REQUEST" | jq -r '.path')" == '/hello-world' ] && \
+   [ "$(echo "$REQUEST" | jq -r '.method')" == 'PUT' ] && \
+   [ "$(echo "$REQUEST" | jq -r '.headers.arbitrary')" == 'Header' ]; then
     passed "HTTP request passed."
 else
     failed "HTTP request failed."
-    echo $REQUEST | jq
+    echo "$REQUEST" | jq
     exit 1
 fi
 
@@ -300,12 +292,11 @@ message " Start container with response body only "
 docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
 wait_for_ready
 RESPONSE=$(curl -s -k -X POST -d 'cauliflower' http://localhost:8080/a/b/c?response_body_only=true)
-if [[ ${RESPONSE} == "cauliflower" ]]
-then
+if [[ "$RESPONSE" == "cauliflower" ]]; then
     passed "Response body only received."
 else
     failed "Expected response body only."
-    echo $RESPONSE
+    echo "$RESPONSE"
     exit 1
 fi
 
@@ -319,14 +310,13 @@ docker run -d --rm -e JWT_HEADER=Authentication --name http-echo-tests -p 8080:8
 wait_for_ready
 
 REQUEST=$(curl -s -k -H "Authentication: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c" https://localhost:8443/ )
-if [ $(echo $REQUEST | jq -r '.jwt.header.typ') == 'JWT' ] && \
-   [ $(echo $REQUEST | jq -r '.jwt.header.alg') == 'HS256' ] && \
-   [ $(echo $REQUEST | jq -r '.jwt.payload.sub') == '1234567890' ]
-then
+if [ "$(echo "$REQUEST" | jq -r '.jwt.header.typ')" == 'JWT' ] && \
+   [ "$(echo "$REQUEST" | jq -r '.jwt.header.alg')" == 'HS256' ] && \
+   [ "$(echo "$REQUEST" | jq -r '.jwt.payload.sub')" == '1234567890' ]; then
     passed "JWT request passed."
 else
     failed "JWT request failed."
-    echo $REQUEST | jq
+    echo "$REQUEST" | jq
     exit 1
 fi
 
@@ -723,12 +713,11 @@ console.log(sign('my-value','mysecretkey123'));")
 
 
 RESPONSE=$(curl -s http://localhost:8080/ -H "Cookie: mysigned=s:${SIGNED_COOKIE}")
-if [ $(echo $RESPONSE | jq -r '.signedCookies.mysigned') == 'my-value' ]
-then
+if [ "$(echo "$RESPONSE" | jq -r '.signedCookies.mysigned')" == 'my-value' ]; then
     passed "Signed cookie test passed."
 else
     failed "Signed cookie test failed."
-    echo $RESPONSE | jq
+    echo "$RESPONSE" | jq
     exit 1
 fi
 
@@ -743,13 +732,12 @@ wait_for_ready
 
 
 RESPONSE=$(curl -s http://localhost:8080/ -H "Cookie: foo=bar; baz=qux")
-if [ $(echo $RESPONSE | jq -r '.cookies.foo') == 'bar' ] && \
-   [ $(echo $RESPONSE | jq -r '.cookies.baz') == 'qux' ]
-then
+if [ "$(echo "$RESPONSE" | jq -r '.cookies.foo')" == 'bar' ] && \
+   [ "$(echo "$RESPONSE" | jq -r '.cookies.baz')" == 'qux' ]; then
     passed "Cookies returned in response test passed."
 else
     failed "Cookies returned in response test failed."
-    echo $RESPONSE | jq
+    echo "$RESPONSE" | jq
     exit 1
 fi
 
