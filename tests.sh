@@ -518,8 +518,8 @@ else
     exit 1
 fi
 
-message " Check that HTTP server does not have any client certificate property"
-CLIENT_CERT=$(curl -sk --cert cert.pem --key testpk.pem  http://localhost:8080/  | jq  'has("clientCertificate")')
+message " Check that plaintext HTTP port does not have any client certificate property"
+CLIENT_CERT=$(curl -s http://localhost:8080/ | jq 'has("clientCertificate")')
 if [[ "$CLIENT_CERT" == "false" ]]
 then
     passed "Client certificate details are not present in regular HTTP server"
