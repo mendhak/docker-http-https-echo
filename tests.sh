@@ -21,6 +21,27 @@ function passed {
     echo ${GREEN}✓$1${RESTORE}
 }
 
+wait_for_ready() {
+    local check_path="${1:-/}"
+    for i in {1..30}; do
+        if curl -sf "http://localhost:8080${check_path}" >/dev/null 2>&1; then
+            return 0
+        fi
+        sleep 0.5
+    done
+    echo "Container failed to start"; exit 1
+}
+
+wait_for_removed() {
+    for i in {1..30}; do
+        if ! docker ps -q --filter "name=http-echo-tests" | grep -q .; then
+            return 0
+        fi
+        sleep 0.5
+    done
+    echo "Container failed to stop"; exit 1
+}
+
 if ! [ -x "$(command -v jq)" ]; then
     message "JQ not installed. Installing..."
     sudo apt -y install jq
@@ -44,11 +65,12 @@ mkdir -p testarea
 pushd testarea
 
 message " Cleaning up from previous test run "
-docker ps -aq --filter "name=http-echo-tests" | grep -q . && docker stop http-echo-tests && docker rm -f http-echo-tests
+docker rm -f http-echo-tests 2>/dev/null || true
+wait_for_removed
 
 message " Start container normally "
 docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
-sleep 10
+wait_for_ready
 
 
 message " Make http(s) request, and test the path, method, header and status code. "
@@ -178,11 +200,11 @@ fi
 
 message " Stop containers "
 docker stop http-echo-tests
-sleep 5
+wait_for_removed
 
 message " Start container with max header size "
 docker run -d --rm -e MAX_HEADER_SIZE=1000 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
-sleep 10
+wait_for_ready
 
 message " Make request with a header within limit."
 LARGE_HEADER_VALUE=$(head -c 600 </dev/urandom | base64 | tr -d '\n')
@@ -210,11 +232,11 @@ fi
 
 message " Stop containers "
 docker stop http-echo-tests
-sleep 5
+wait_for_removed
 
 message " Start container with different internal ports "
 docker run -d --rm -e HTTP_PORT=8888 -e HTTPS_PORT=9999 --name http-echo-tests -p 8080:8888 -p 8443:9999 -t mendhak/http-https-echo:testing
-sleep 5
+wait_for_ready
 
 message " Make http(s) request, and test the path, method and header. "
 REQUEST=$(curl -s -k -X PUT -H "Arbitrary:Header" -d aaa=bbb https://localhost:8443/hello-world)
@@ -244,11 +266,12 @@ fi
 
 message " Stop containers "
 docker stop http-echo-tests
-sleep 5
+wait_for_removed
 
 message " Start container with empty responses "
 docker run -d --rm -e ECHO_BACK_TO_CLIENT=false --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
-sleep 5
+wait_for_ready
+
 REQUEST=$(curl -s -k http://localhost:8080/a/b/c)
 if [[ -z ${REQUEST} ]]
 then
@@ -261,11 +284,11 @@ fi
 
 message " Stop containers "
 docker stop http-echo-tests
-sleep 5
+wait_for_removed
 
 message " Start container with response body only "
 docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
-sleep 5
+wait_for_ready
 RESPONSE=$(curl -s -k -X POST -d 'cauliflower' http://localhost:8080/a/b/c?response_body_only=true)
 if [[ ${RESPONSE} == "cauliflower" ]]
 then
@@ -279,11 +302,11 @@ fi
 
 message " Stop containers "
 docker stop http-echo-tests
-sleep 5
+wait_for_removed
 
 message " Start container with JWT_HEADER "
 docker run -d --rm -e JWT_HEADER=Authentication --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
-sleep 5
+wait_for_ready
 
 REQUEST=$(curl -s -k -H "Authentication: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c" https://localhost:8443/ )
 if [ $(echo $REQUEST | jq -r '.jwt.header.typ') == 'JWT' ] && \
@@ -299,15 +322,17 @@ fi
 
 message " Stop containers "
 docker stop http-echo-tests
-sleep 5
+wait_for_removed
 
 
 message " Start container with LOG_IGNORE_PATH (normal path)"
 docker run -d --rm -e LOG_IGNORE_PATH=/ping --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
-sleep 5
+wait_for_ready "/ping"
+
 curl -s -k -X POST -d "banana" https://localhost:8443/ping > /dev/null
 
-if [ $(docker logs http-echo-tests | wc -l) == 2 ] && \
+# There should be 3 lines, the "listening on...", the /ping ready test, and the /ping POST test. 
+if [ $(docker logs http-echo-tests | wc -l) == 3 ] && \
    ! [ $(docker logs http-echo-tests | grep banana) ]
 then
     passed "LOG_IGNORE_PATH ignored the /ping path"
@@ -319,14 +344,16 @@ fi
 
 message " Stop containers "
 docker stop http-echo-tests
-sleep 5
+wait_for_removed
 
 message " Start container with LOG_IGNORE_PATH (regex path)"
 docker run -d --rm -e LOG_IGNORE_PATH="^\/ping|^\/health|^\/metrics" --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
-sleep 5
+wait_for_ready "/health"
+
 curl -s -k -X POST -d "banana" https://localhost:8443/metrics > /dev/null
 
-if [ $(docker logs http-echo-tests | wc -l) == 2 ] && \
+# There should be 3 lines, the "listening on...", the /health ready test, and the /metrics POST test.
+if [ $(docker logs http-echo-tests | wc -l) == 3 ] && \
    ! [ $(docker logs http-echo-tests | grep banana) ]
 then
     passed "LOG_IGNORE_PATH ignored the /metrics path"
@@ -351,14 +378,16 @@ fi
 
 message " Stop containers "
 docker stop http-echo-tests
-sleep 5
+wait_for_removed
 
 message " Start container with LOG_IGNORE_PATH (ignore all paths) "
 docker run -d --rm -e LOG_IGNORE_PATH=".*" --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
-sleep 5
+wait_for_ready "/hello"
+
 curl -s -k -X POST -d "banana" https://localhost:8443/ > /dev/null
 
-if [ $(docker logs http-echo-tests | wc -l) == 2 ] && \
+# There should be 3 lines, the "listening on", the "/hello" ready test, and the POST banana test. 
+if [ $(docker logs http-echo-tests | wc -l) == 3 ] && \
    ! [ $(docker logs http-echo-tests | grep banana) ]
 then
     passed "LOG_IGNORE_PATH ignored all paths"
@@ -370,12 +399,13 @@ fi
 
 message " Stop containers "
 docker stop http-echo-tests
-sleep 5
+wait_for_removed
 
 
 message " Start container with DISABLE_REQUEST_LOGS "
 docker run -d --rm -e DISABLE_REQUEST_LOGS=true --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
-sleep 5
+wait_for_ready "/healthy"
+
 curl -s -k -X GET https://localhost:8443/strawberry > /dev/null
 if  [ $(docker logs http-echo-tests | grep -c "GET /strawberry HTTP/1.1") -eq 0 ]
 then
@@ -388,13 +418,14 @@ fi
 
 message " Stop containers "
 docker stop http-echo-tests
-sleep 5
+wait_for_removed
 
 message " Start container with CORS_CONFIG"
 docker run -d --rm \
     -e CORS_ALLOW_ORIGIN="http://example.com" -e CORS_ALLOW_HEADERS="x-custom-test-header" \
     --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
-sleep 5
+wait_for_ready
+
 # Check if the expected CORS headers are present in the response
 if curl -s -i http://localhost:8080/ 2>&1 | grep -q -E \
     "Access-Control-Allow-Headers: x-custom-test-header" &&
@@ -409,14 +440,16 @@ fi
 
 message " Stop containers "
 docker stop http-echo-tests
-sleep 5
+wait_for_removed
 
 message " Start container with LOG_WITHOUT_NEWLINE "
 docker run -d --rm -e LOG_WITHOUT_NEWLINE=1 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
-sleep 5
+wait_for_ready
+
 curl -s -k -X POST -d "tiramisu" https://localhost:8443/ > /dev/null
 
-if [ $(docker logs http-echo-tests | wc -l) == 3 ] && \
+# There will be 4 lines, the Listening on, the / ready test and response, the POST test and response
+if [ $(docker logs http-echo-tests | wc -l) == 5 ] && \
    [ $(docker logs http-echo-tests | grep tiramisu) ]
 then
     passed "LOG_WITHOUT_NEWLINE logged output in single line"
@@ -429,7 +462,7 @@ fi
 
 message " Stop containers "
 docker stop http-echo-tests
-sleep 5
+wait_for_removed
 
 message " Check that container is running as a NON ROOT USER by default"
 docker run -d --name http-echo-tests --rm mendhak/http-https-echo:testing
@@ -446,13 +479,14 @@ fi
 
 message " Stop containers "
 docker stop http-echo-tests
-sleep 5
+wait_for_removed
 
 message " Check that container is running as user different that the user defined in image"
 IMAGE_USER="$(docker image inspect mendhak/http-https-echo:testing -f '{{ .Config.User }}')"
 CONTAINER_USER="$((IMAGE_USER + 1000000))"
 docker run -d --name http-echo-tests --rm -u "${CONTAINER_USER}" -p 8080:8080 mendhak/http-https-echo:testing
-sleep 5
+wait_for_ready
+
 curl -s http://localhost:8080 > /dev/null
 
 WHOAMI="$(docker exec http-echo-tests id -u)"
@@ -467,7 +501,7 @@ fi
 
 message " Stop containers "
 docker stop http-echo-tests
-sleep 5
+wait_for_removed
 
 message " Check that mTLS server responds with client certificate details"
 # Generate a new self signed cert locally
@@ -475,7 +509,8 @@ openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes -keyout testpk.pem 
        -subj "/CN=client.example.net" \
        -addext "subjectAltName=DNS:client.example.net"
 docker run -d --rm -e MTLS_ENABLE=1 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
-sleep 5
+wait_for_ready
+
 COMMON_NAME="$(curl -sk --cert fullchain.pem --key testpk.pem  https://localhost:8443/ | jq -r  '.clientCertificate.subject.CN')"
 SAN="$(curl -sk --cert fullchain.pem --key testpk.pem  https://localhost:8443/ | jq -r  '.clientCertificate.subjectaltname')"
 if [ "$COMMON_NAME" == "client.example.net" ] && [ "$SAN" == "DNS:client.example.net" ]
@@ -508,7 +543,7 @@ fi
 
 message " Stop containers "
 docker stop http-echo-tests
-sleep 5
+wait_for_removed
 
 message " Check that SSL certificate and private key are loaded from custom location"
 cert_common_name="server.example.net"
@@ -542,11 +577,12 @@ fi
 
 message " Stop containers "
 docker stop http-echo-tests
-sleep 5
+wait_for_removed
 
 message " Check that environment variables returned in response if enabled"
 docker run -d --rm -e ECHO_INCLUDE_ENV_VARS=1 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
-sleep 5
+wait_for_ready
+
 RESPONSE_BODY="$(curl -sk https://localhost:8443/ | jq -r  '.env.ECHO_INCLUDE_ENV_VARS')"
 
 if [ "$RESPONSE_BODY" == "1" ]
@@ -559,11 +595,12 @@ fi
 
 message " Stop containers "
 docker stop http-echo-tests
-sleep 5
+wait_for_removed
 
 message " Check that environment variables are not present in response by default"
 docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
-sleep 5
+wait_for_ready
+
 RESPONSE_BODY_ENV_CHECK="$(curl -sk https://localhost:8443/ | jq 'has("env")')"
 
 if [ "$RESPONSE_BODY_ENV_CHECK" == "false" ]
@@ -576,11 +613,12 @@ fi
 
 message " Stop containers "
 docker stop http-echo-tests
-sleep 5
+wait_for_removed
 
 message " Start container with PROMETHEUS disabled "
 docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
-sleep 5
+wait_for_ready
+
 curl -s -k -X POST -d "tiramisu" https://localhost:8443/ > /dev/null
 
 # grep for  http_request_duration_seconds_count ensure it is not present at /metric path
@@ -597,11 +635,12 @@ fi
 
 message " Stop containers "
 docker stop http-echo-tests
-sleep 5
+wait_for_removed
 
 message " Start container with PROMETHEUS enabled "
 docker run -d -e PROMETHEUS_ENABLED=true --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
-sleep 5
+wait_for_ready
+
 curl -s -k -X POST -d "tiramisu" https://localhost:8443/ > /dev/null
 
 METRICS_CHECK="$(curl -sk http://localhost:8080/metrics | grep http_request_duration_seconds_count )"
@@ -617,12 +656,12 @@ fi
 
 message " Stop containers "
 docker stop http-echo-tests
-sleep 5
+wait_for_removed
 
 message " Start container with PRESERVE_HEADER_CASE enabled "
 docker run -d -e PRESERVE_HEADER_CASE=true --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
+wait_for_ready
 
-sleep 5
 HEADER_CASE_CHECK=$(curl -s -H "prEseRVe-CaSE: A1b2C3" -H 'x-a-b: 999'  -H 'X-a-B: 13'  localhost:8080 | jq -r '.headers."prEseRVe-CaSE"')
 if [[ "$HEADER_CASE_CHECK" == "A1b2C3" ]]
 then
@@ -634,12 +673,13 @@ fi
 
 message " Stop containers "
 docker stop http-echo-tests
-sleep 5
+wait_for_removed
 
 message " Start container with a custom response body from a file "
 echo "<h1>Hello World</h1>" > test.html
 docker run -d --rm -v ${PWD}/test.html:/app/test.html --name http-echo-tests -p 8080:8080 -e OVERRIDE_RESPONSE_BODY_FILE_PATH=/test.html -t mendhak/http-https-echo:testing
-sleep 5
+wait_for_ready
+
 RESPONSE_BODY=$(curl -s http://localhost:8080)
 if [[ "$RESPONSE_BODY" == "<h1>Hello World</h1>" ]]
 then
@@ -651,13 +691,13 @@ fi
 
 message " Stop containers "
 docker stop http-echo-tests
-sleep 5
+wait_for_removed
 
 message " Start container with signed cookies support "
 # Set cookie secret for signing/verifying cookies
 docker run -d --rm -e COOKIE_SECRET=mysecretkey123 \
     --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
-sleep 5
+wait_for_ready
 
 SIGNED_COOKIE=$(node -e "var crypto = require('crypto');
 
@@ -684,12 +724,12 @@ fi
 
 message " Stop containers "
 docker stop http-echo-tests
-sleep 5
+wait_for_removed
 
 
 message " Check that regular cookies are returned in response "
 docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
-sleep 5
+wait_for_ready
 
 
 RESPONSE=$(curl -s http://localhost:8080/ -H "Cookie: foo=bar; baz=qux")
@@ -705,7 +745,7 @@ fi
 
 message " Stop containers "
 docker stop http-echo-tests
-sleep 5
+wait_for_removed
 
 popd
 rm -rf testarea
