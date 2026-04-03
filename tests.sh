@@ -32,7 +32,8 @@ wait_for_ready() {
     echo "Container failed to start"; exit 1
 }
 
-wait_for_removed() {
+stop_and_remove() {
+    docker stop http-echo-tests 2>/dev/null || true
     for i in {1..20}; do
         if ! docker ps -aq --filter "name=http-echo-tests" | grep -q .; then
             return 0
@@ -76,7 +77,7 @@ pushd testarea
 
 message " Cleaning up from previous test run "
 docker rm -f http-echo-tests 2>/dev/null || true
-wait_for_removed
+stop_and_remove
 
 message " Start container normally "
 docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
@@ -203,8 +204,7 @@ else
 fi
 
 message " Stop containers "
-docker stop http-echo-tests
-wait_for_removed
+stop_and_remove
 
 message " Start container with max header size "
 docker run -d --rm -e MAX_HEADER_SIZE=1000 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
@@ -235,8 +235,7 @@ else
 fi
 
 message " Stop containers "
-docker stop http-echo-tests
-wait_for_removed
+stop_and_remove
 
 message " Start container with different internal ports "
 docker run -d --rm -e HTTP_PORT=8888 -e HTTPS_PORT=9999 --name http-echo-tests -p 8080:8888 -p 8443:9999 -t mendhak/http-https-echo:testing
@@ -267,8 +266,7 @@ fi
 
 
 message " Stop containers "
-docker stop http-echo-tests
-wait_for_removed
+stop_and_remove
 
 message " Start container with empty responses "
 docker run -d --rm -e ECHO_BACK_TO_CLIENT=false --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
@@ -285,8 +283,7 @@ else
 fi
 
 message " Stop containers "
-docker stop http-echo-tests
-wait_for_removed
+stop_and_remove
 
 message " Start container with response body only "
 docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
@@ -302,8 +299,7 @@ fi
 
 
 message " Stop containers "
-docker stop http-echo-tests
-wait_for_removed
+stop_and_remove
 
 message " Start container with JWT_HEADER "
 docker run -d --rm -e JWT_HEADER=Authentication --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
@@ -321,8 +317,7 @@ else
 fi
 
 message " Stop containers "
-docker stop http-echo-tests
-wait_for_removed
+stop_and_remove
 
 
 message " Start container with LOG_IGNORE_PATH (normal path)"
@@ -343,8 +338,7 @@ else
 fi
 
 message " Stop containers "
-docker stop http-echo-tests
-wait_for_removed
+stop_and_remove
 
 message " Start container with LOG_IGNORE_PATH (regex path)"
 docker run -d --rm -e LOG_IGNORE_PATH="^\/ping|^\/health|^\/metrics" --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
@@ -377,8 +371,7 @@ fi
 
 
 message " Stop containers "
-docker stop http-echo-tests
-wait_for_removed
+stop_and_remove
 
 message " Start container with LOG_IGNORE_PATH (ignore all paths) "
 docker run -d --rm -e LOG_IGNORE_PATH=".*" --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
@@ -398,8 +391,7 @@ else
 fi
 
 message " Stop containers "
-docker stop http-echo-tests
-wait_for_removed
+stop_and_remove
 
 
 message " Start container with DISABLE_REQUEST_LOGS "
@@ -417,8 +409,7 @@ else
 fi
 
 message " Stop containers "
-docker stop http-echo-tests
-wait_for_removed
+stop_and_remove
 
 message " Start container with CORS_CONFIG"
 docker run -d --rm \
@@ -439,8 +430,7 @@ else
 fi
 
 message " Stop containers "
-docker stop http-echo-tests
-wait_for_removed
+stop_and_remove
 
 message " Start container with LOG_WITHOUT_NEWLINE "
 docker run -d --rm -e LOG_WITHOUT_NEWLINE=1 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
@@ -461,8 +451,7 @@ fi
 
 
 message " Stop containers "
-docker stop http-echo-tests
-wait_for_removed
+stop_and_remove
 
 message " Check that container is running as a NON ROOT USER by default"
 docker run -d --name http-echo-tests --rm mendhak/http-https-echo:testing
@@ -478,8 +467,7 @@ else
 fi
 
 message " Stop containers "
-docker stop http-echo-tests
-wait_for_removed
+stop_and_remove
 
 message " Check that container is running as user different that the user defined in image"
 IMAGE_USER="$(docker image inspect mendhak/http-https-echo:testing -f '{{ .Config.User }}')"
@@ -500,8 +488,7 @@ else
 fi
 
 message " Stop containers "
-docker stop http-echo-tests
-wait_for_removed
+stop_and_remove
 
 message " Check that mTLS server responds with client certificate details"
 # Generate a new self signed cert locally
@@ -542,8 +529,7 @@ else
 fi
 
 message " Stop containers "
-docker stop http-echo-tests
-wait_for_removed
+stop_and_remove
 
 message " Check that SSL certificate and private key are loaded from custom location"
 cert_common_name="server.example.net"
@@ -576,8 +562,7 @@ else
 fi
 
 message " Stop containers "
-docker stop http-echo-tests
-wait_for_removed
+stop_and_remove
 
 message " Check that environment variables returned in response if enabled"
 docker run -d --rm -e ECHO_INCLUDE_ENV_VARS=1 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
@@ -594,8 +579,7 @@ else
 fi
 
 message " Stop containers "
-docker stop http-echo-tests
-wait_for_removed
+stop_and_remove
 
 message " Check that environment variables are not present in response by default"
 docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
@@ -612,8 +596,7 @@ else
 fi
 
 message " Stop containers "
-docker stop http-echo-tests
-wait_for_removed
+stop_and_remove
 
 message " Start container with PROMETHEUS disabled "
 docker run -d --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
@@ -634,8 +617,7 @@ else
 fi
 
 message " Stop containers "
-docker stop http-echo-tests
-wait_for_removed
+stop_and_remove
 
 message " Start container with PROMETHEUS enabled "
 docker run -d -e PROMETHEUS_ENABLED=true --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
@@ -655,8 +637,7 @@ fi
 
 
 message " Stop containers "
-docker stop http-echo-tests
-wait_for_removed
+stop_and_remove
 
 message " Start container with PRESERVE_HEADER_CASE enabled "
 docker run -d -e PRESERVE_HEADER_CASE=true --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
@@ -672,8 +653,7 @@ else
 fi
 
 message " Stop containers "
-docker stop http-echo-tests
-wait_for_removed
+stop_and_remove
 
 message " Start container with a custom response body from a file "
 echo "<h1>Hello World</h1>" > test.html
@@ -690,8 +670,7 @@ else
 fi
 
 message " Stop containers "
-docker stop http-echo-tests
-wait_for_removed
+stop_and_remove
 
 message " Start container with signed cookies support "
 # Set cookie secret for signing/verifying cookies
@@ -722,8 +701,7 @@ else
 fi
 
 message " Stop containers "
-docker stop http-echo-tests
-wait_for_removed
+stop_and_remove
 
 
 message " Check that regular cookies are returned in response "
@@ -742,7 +720,6 @@ else
 fi
 
 message " Stop containers "
-docker stop http-echo-tests
-wait_for_removed
+stop_and_remove
 
 message "DONE"
