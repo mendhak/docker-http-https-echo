@@ -327,13 +327,15 @@ wait_for_ready "/ping"
 curl -s -k -X POST -d "banana" https://localhost:8443/ping > /dev/null
 
 # There should be 3 lines, the "listening on...", the /ping ready test, and the /ping POST test. 
-if [[ "$(docker logs http-echo-tests | wc -l)" == 3 ]] && \
-    ! docker logs http-echo-tests | grep -q banana
+LOG_OUTPUT="$(docker logs http-echo-tests 2>&1)"
+LINE_COUNT=$(( $(wc -l <<< "$LOG_OUTPUT") ))
+if [[ "$LINE_COUNT" == 3 ]] && \
+    ! grep -q banana <<< "$LOG_OUTPUT"
 then
     passed "LOG_IGNORE_PATH ignored the /ping path"
 else
     failed "LOG_IGNORE_PATH failed"
-    docker logs http-echo-tests
+    echo "$LOG_OUTPUT"
     exit 1
 fi
 
@@ -347,25 +349,28 @@ wait_for_ready "/health"
 curl -s -k -X POST -d "banana" https://localhost:8443/metrics > /dev/null
 
 # There should be 3 lines, the "listening on...", the /health ready test, and the /metrics POST test.
-if [[ "$(docker logs http-echo-tests | wc -l)" == 3 ]] && \
-    ! docker logs http-echo-tests | grep -q banana
+LOG_OUTPUT="$(docker logs http-echo-tests 2>&1)"
+LINE_COUNT=$(( $(wc -l <<< "$LOG_OUTPUT") ))
+if [[ "$LINE_COUNT" == 3 ]] && \
+    ! grep -q banana <<< "$LOG_OUTPUT"
 then
     passed "LOG_IGNORE_PATH ignored the /metrics path"
 else
     failed "LOG_IGNORE_PATH failed"
-    docker logs http-echo-tests
+    echo "$LOG_OUTPUT"
     exit 1
 fi
 
 # Test a positive case where the path is not ignored
 curl -s -k -X POST -d "strawberry" https://localhost:8443/veryvisible > /dev/null
 
-if docker logs http-echo-tests | grep -q strawberry
+LOG_OUTPUT="$(docker logs http-echo-tests 2>&1)"
+if grep -q strawberry <<< "$LOG_OUTPUT"
 then
     passed "LOG_IGNORE_PATH didn't ignore the /veryvisible path"
 else
     failed "LOG_IGNORE_PATH failed, it should not ignore the /veryvisible path"
-    docker logs http-echo-tests
+    echo "$LOG_OUTPUT"
     exit 1
 fi
 
@@ -380,13 +385,15 @@ wait_for_ready "/hello"
 curl -s -k -X POST -d "banana" https://localhost:8443/ > /dev/null
 
 # There should be 3 lines, the "listening on", the "/hello" ready test, and the POST banana test. 
-if [[ "$(docker logs http-echo-tests | wc -l)" == 3 ]] && \
-    ! docker logs http-echo-tests | grep -q banana
+LOG_OUTPUT="$(docker logs http-echo-tests 2>&1)"
+LINE_COUNT=$(( $(wc -l <<< "$LOG_OUTPUT") ))
+if [[ "$LINE_COUNT" == 3 ]] && \
+    ! grep -q banana <<< "$LOG_OUTPUT"
 then
     passed "LOG_IGNORE_PATH ignored all paths"
 else
     failed "LOG_IGNORE_PATH failed"
-    docker logs http-echo-tests
+    echo "$LOG_OUTPUT"
     exit 1
 fi
 
@@ -399,12 +406,13 @@ docker run -d --rm -e DISABLE_REQUEST_LOGS=true --name http-echo-tests -p 8080:8
 wait_for_ready "/healthy"
 
 curl -s -k -X GET https://localhost:8443/strawberry > /dev/null
-if [[ "$(docker logs http-echo-tests | grep -c "GET /strawberry HTTP/1.1")" -eq 0 ]]
+LOG_OUTPUT="$(docker logs http-echo-tests 2>&1)"
+if [[ "$(grep -c "GET /strawberry HTTP/1.1" <<< "$LOG_OUTPUT")" -eq 0 ]]
 then
     passed "DISABLE_REQUEST_LOGS disabled Express HTTP logging"
 else
     failed "DISABLE_REQUEST_LOGS failed"
-    docker logs http-echo-tests
+    echo "$LOG_OUTPUT"
     exit 1
 fi
 
@@ -439,13 +447,15 @@ wait_for_ready
 curl -s -k -X POST -d "tiramisu" https://localhost:8443/ > /dev/null
 
 # There will be 4 lines, the Listening on, the / ready test and response, the POST test and response
-if [[ "$(docker logs http-echo-tests | wc -l)" == 5 ]] && \
-    docker logs http-echo-tests | grep -q tiramisu
+LOG_OUTPUT="$(docker logs http-echo-tests 2>&1)"
+LINE_COUNT=$(( $(wc -l <<< "$LOG_OUTPUT") ))
+if [[ "$LINE_COUNT" == 5 ]] && \
+    grep -q tiramisu <<< "$LOG_OUTPUT"
 then
     passed "LOG_WITHOUT_NEWLINE logged output in single line"
 else
     failed "LOG_WITHOUT_NEWLINE failed"
-    docker logs http-echo-tests
+    echo "$LOG_OUTPUT"
     exit 1
 fi
 
