@@ -58,8 +58,8 @@ app.use(function(req, res, next){
     next();
   }));
 });
-//Handle all paths
-app.all('*', (req, res) => {
+//Handle all paths. This /{*splat} is new Express 5 path syntax. https://expressjs.com/en/guide/migrating-5.html#path-syntax
+app.all('/{*splat}', (req, res) => {
   
   if(process.env.OVERRIDE_RESPONSE_BODY_FILE_PATH){
     // Path is relative to current directory
