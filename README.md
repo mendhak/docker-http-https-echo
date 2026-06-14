@@ -19,6 +19,7 @@ This image is executed as non root by default and is fully compliant with Kubern
 - [Basic Usage](#basic-usage)
 - [Choose your ports](#choose-your-ports)
 - [Use your own certificates](#use-your-own-certificates)
+- [Trust additional proxy IPs](#trust-additional-proxy-ips)
 - [Decode JWT header](#decode-jwt-header)
 - [Disable ExpressJS log lines](#disable-expressjs-log-lines)
 - [Do not log specific path](#do-not-log-specific-path)
@@ -94,6 +95,13 @@ You can use volume mounting to substitute the certificate and private key with y
             - /etc/ssl/private/ssl-cert-snakeoil.key:/app/testpk.pem
 
 You can use the environment variables `HTTPS_CERT_FILE` and `HTTPS_KEY_FILE` to define the location of existing certificate and private key inside container.
+
+
+## Trust additional proxy IPs
+
+By default, Express is configured to trust forwarded proxy headers from loopback, link-local, and private IP ranges. To also trust additional proxy IPs or subnets, set `ADDITIONAL_TRUSTED_PROXIES` to a single value or a comma-separated list.
+
+    docker run -e ADDITIONAL_TRUSTED_PROXIES="2001:db8::/32,203.0.113.10" -p 8080:8080 -p 8443:8443 --rm -t mendhak/http-https-echo:40
 
 
 ## Decode JWT header
