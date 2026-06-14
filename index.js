@@ -17,11 +17,18 @@ const {
   PROMETHEUS_WITH_METHOD = 'true',
   PROMETHEUS_WITH_STATUS = 'true',
   PROMETHEUS_METRIC_TYPE = 'summary',
-  MAX_HEADER_SIZE = 1048576
+  MAX_HEADER_SIZE = 1048576,
+  ADDITIONAL_TRUSTED_PROXIES
 } = process.env
 
 const maxHeaderSize = parseInt(MAX_HEADER_SIZE, 10) || 1048576;
 
+const trustProxy = [
+  'loopback',
+  'linklocal',
+  'uniquelocal',
+  ...(ADDITIONAL_TRUSTED_PROXIES || '').split(',').map(proxy => proxy.trim()).filter(Boolean)
+];
 
 const sleep = promisify(setTimeout);
 const metricsMiddleware = promBundle({
@@ -34,7 +41,7 @@ const metricsMiddleware = promBundle({
 
 const app = express()
 app.set('json spaces', 2);
-app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
+app.set('trust proxy', trustProxy);
 
 if(PROMETHEUS_ENABLED === 'true') {
   app.use(metricsMiddleware);

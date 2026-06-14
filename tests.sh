@@ -237,6 +237,22 @@ fi
 message " Stop containers "
 stop_and_remove
 
+message " Start container with additional trusted proxies "
+docker run -d --rm -e ADDITIONAL_TRUSTED_PROXIES="2001:db8::/32,198.51.100.0/24" --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
+wait_for_ready
+
+REQUEST=$(curl -s -H "X-Forwarded-For: 203.0.113.10, 198.51.100.1, 2001:db8::1" http://localhost:8080/)
+if [[ "$(echo "$REQUEST" | jq -r '.ip')" == '203.0.113.10' ]]; then
+    passed "Additional trusted proxies passed."
+else
+    failed "Additional trusted proxies failed."
+    echo "$REQUEST" | jq
+    exit 1
+fi
+
+message " Stop containers "
+stop_and_remove
+
 message " Start container with different internal ports "
 docker run -d --rm -e HTTP_PORT=8888 -e HTTPS_PORT=9999 --name http-echo-tests -p 8080:8888 -p 8443:9999 -t mendhak/http-https-echo:testing
 wait_for_ready
