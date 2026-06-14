@@ -225,7 +225,7 @@ fi
 message " Make request with a header exceeding limit."
 LARGE_HEADER_VALUE=$(head -c 5000 </dev/urandom | base64 | tr -d '\n')
 # Do with curl -v and look for "HTTP/1.1 431 Request Header Fields Too Large" output
-REQUEST=$(curl -v -k -H "Large-Header: $LARGE_HEADER_VALUE" https://localhost:8443/ 2>&1)
+REQUEST=$(curl -v -k -H "Large-Header: $LARGE_HEADER_VALUE" https://localhost:8443/ 2>&1 || true)
 if echo "$REQUEST" | grep -q "HTTP/1.1 431 Request Header Fields Too Large"; then
     passed "Large header test resulted in HTTP 431."
 else
