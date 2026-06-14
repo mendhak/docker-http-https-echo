@@ -1,3 +1,7 @@
+## Version `41` - 2026-06-14
+* Added support for additional trusted proxies via `ADDITIONAL_TRUSTED_PROXIES` by [JackMyers001](https://github.com/mendhak/docker-http-https-echo/pull/101)
+* Express update includes the new way of catching all paths
+
 ## Version `40` - 2026-03-20
 * Echo back cookies and signed cookies
 
