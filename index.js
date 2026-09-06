@@ -2,6 +2,8 @@ const os = require('os');
 const jwt = require('jsonwebtoken');
 const http = require('http')
 const https = require('https')
+const http2express = require('http2-express');
+const httpolyglot = require('@httptoolkit/httpolyglot');
 const morgan = require('morgan');
 const express = require('express')
 const cookieParser = require('cookie-parser');
@@ -39,7 +41,7 @@ const metricsMiddleware = promBundle({
   metricType: PROMETHEUS_METRIC_TYPE,
 });
 
-const app = express()
+const app = http2express(express);
 app.set('json spaces', 2);
 app.set('trust proxy', trustProxy);
 
@@ -204,27 +206,53 @@ app.all('/{*splat}', (req, res) => {
 
 });
 
-let httpOpts = {
-  maxHeaderSize: maxHeaderSize
-}
+// let httpOpts = {
+//   maxHeaderSize: maxHeaderSize
+// }
 
-let httpsOpts = {
+// let httpsOpts = {
+//   key: require('fs').readFileSync(process.env.HTTPS_KEY_FILE || 'testpk.pem'),
+//   cert: require('fs').readFileSync(process.env.HTTPS_CERT_FILE || 'fullchain.pem'),
+//   maxHeaderSize: maxHeaderSize
+// };
+
+// //Whether to enable the client certificate feature
+// if(process.env.MTLS_ENABLE){
+//     httpsOpts = {
+//       requestCert: true,
+//       rejectUnauthorized: false,
+//       ...httpsOpts
+//     }
+// }
+
+// var httpServer = http.createServer(httpOpts, app).listen(process.env.HTTP_PORT || 8080);
+// var httpsServer = https.createServer(httpsOpts,app).listen(process.env.HTTPS_PORT || 8443);
+
+// plain text http server, http2 server (aka "h2c")
+var httpServer = httpolyglot.createServer({
+  http: { maxHeaderSize: maxHeaderSize }
+}, app).listen(process.env.HTTP_PORT || 8080);
+
+let tlsOpts = {
   key: require('fs').readFileSync(process.env.HTTPS_KEY_FILE || 'testpk.pem'),
   cert: require('fs').readFileSync(process.env.HTTPS_CERT_FILE || 'fullchain.pem'),
-  maxHeaderSize: maxHeaderSize
+  ALPNProtocols: [ 'http/1.1', 'h2'],
 };
 
 //Whether to enable the client certificate feature
 if(process.env.MTLS_ENABLE){
-    httpsOpts = {
+    tlsOpts = {
       requestCert: true,
       rejectUnauthorized: false,
-      ...httpsOpts
+      ...tlsOpts
     }
 }
 
-var httpServer = http.createServer(httpOpts, app).listen(process.env.HTTP_PORT || 8080);
-var httpsServer = https.createServer(httpsOpts,app).listen(process.env.HTTPS_PORT || 8443);
+var httpsServer = httpolyglot.createServer({
+  tls: tlsOpts,
+  http: { maxHeaderSize: maxHeaderSize }
+}, app).listen(process.env.HTTPS_PORT || 8443);
+
 console.log(`Listening on ports ${process.env.HTTP_PORT || 8080} for http, and ${process.env.HTTPS_PORT || 8443} for https.`);
 
 let calledClose = false;
@@ -232,8 +260,11 @@ let calledClose = false;
 process.on('exit', function () {
   if (calledClose) return;
   console.log('Got exit event. Trying to stop Express server.');
-  server.close(function() {
-    console.log("Express server closed");
+  httpServer.close(function() {
+    console.log("HTTP server closed");
+  });
+  httpsServer.close(function() {
+    console.log("HTTPS server closed");
   });
 });
 

@@ -68,7 +68,7 @@ if [[ -n "${GITHUB_ACTIONS:-}" ]]; then
     fi
 else
     echo " Local run. Build image "
-    docker build -t mendhak/http-https-echo:testing .
+    docker build --no-cache -t mendhak/http-https-echo:testing .
 fi
 
 
