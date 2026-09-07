@@ -2,6 +2,9 @@
 
 set -euo pipefail
 
+curl --version
+docker info
+
 function message {
     echo ""
     echo "---------------------------------------------------------------"
