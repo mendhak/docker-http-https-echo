@@ -53,6 +53,28 @@ if(process.env.DISABLE_REQUEST_LOGS !== 'true'){
   app.use(morgan('combined'));
 }
 
+// Enforce MAX_HEADER_SIZE at the application level, 
+// because it's not configurable for HTTP2 in Node :(
+// https://github.com/nodejs/node/issues/35218
+app.use(function(req, res, next){
+  let totalHeaderSize = 0;
+  for (const [name, value] of Object.entries(req.headers)) {
+    totalHeaderSize += Buffer.byteLength(name);
+    if (Array.isArray(value)) {
+      for (const v of value) {
+        totalHeaderSize += Buffer.byteLength(v);
+      }
+    } else {
+      totalHeaderSize += Buffer.byteLength(value);
+    }
+  }
+  if (totalHeaderSize > maxHeaderSize) {
+    res.status(431).end();
+    return;
+  }
+  next();
+});
+
 app.use(function(req, res, next){
   req.pipe(concat(function(data){
 
