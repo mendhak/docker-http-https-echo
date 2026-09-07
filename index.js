@@ -1,7 +1,5 @@
 const os = require('os');
 const jwt = require('jsonwebtoken');
-const http = require('http')
-const https = require('https')
 const http2express = require('http2-express');
 const httpolyglot = require('@httptoolkit/httpolyglot');
 const morgan = require('morgan');
@@ -208,31 +206,11 @@ app.all('/{*splat}', (req, res) => {
 
 });
 
-// let httpOpts = {
-//   maxHeaderSize: maxHeaderSize
-// }
-
-// let httpsOpts = {
-//   key: require('fs').readFileSync(process.env.HTTPS_KEY_FILE || 'testpk.pem'),
-//   cert: require('fs').readFileSync(process.env.HTTPS_CERT_FILE || 'fullchain.pem'),
-//   maxHeaderSize: maxHeaderSize
-// };
-
-// //Whether to enable the client certificate feature
-// if(process.env.MTLS_ENABLE){
-//     httpsOpts = {
-//       requestCert: true,
-//       rejectUnauthorized: false,
-//       ...httpsOpts
-//     }
-// }
-
-// var httpServer = http.createServer(httpOpts, app).listen(process.env.HTTP_PORT || 8080);
-// var httpsServer = https.createServer(httpsOpts,app).listen(process.env.HTTPS_PORT || 8443);
 
 // plain text http server, http2 server (aka "h2c")
 var httpServer = httpolyglot.createServer({
-  http: { maxHeaderSize: maxHeaderSize }
+  http: { maxHeaderSize: maxHeaderSize }, 
+  http2: {}  // HTTP/2 in Node doesn't support max header size
 }, app).listen(process.env.HTTP_PORT || 8080);
 
 let tlsOpts = {
@@ -250,9 +228,11 @@ if(process.env.MTLS_ENABLE){
     }
 }
 
+// https server, http2 server (aka "h2")
 var httpsServer = httpolyglot.createServer({
   tls: tlsOpts,
-  http: { maxHeaderSize: maxHeaderSize }
+  http: { maxHeaderSize: maxHeaderSize },
+  http2: {} // HTTP/2 in Node doesn't support max header size
 }, app).listen(process.env.HTTPS_PORT || 8443);
 
 console.log(`Listening on ports ${process.env.HTTP_PORT || 8080} for http, and ${process.env.HTTPS_PORT || 8443} for https.`);
