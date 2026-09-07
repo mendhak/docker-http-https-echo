@@ -17,11 +17,11 @@ RED=$(echo -en '\033[01;31m')
 GREEN=$(echo -en '\033[01;32m')
 
 function failed {
-    echo "${RED}✗${1}${RESTORE}"
+    echo "${RED}❌ ${1}${RESTORE}"
 }
 
 function passed {
-    echo "${GREEN}✓${1}${RESTORE}"
+    echo "${GREEN}✅ ${1}${RESTORE}"
 }
 
 wait_for_ready() {
@@ -71,7 +71,7 @@ if [[ -n "${GITHUB_ACTIONS:-}" ]]; then
     fi
 else
     echo " Local run. Build image "
-    docker build --no-cache -t mendhak/http-https-echo:testing .
+    docker build -t mendhak/http-https-echo:testing .
 fi
 
 
@@ -249,14 +249,14 @@ message " Start container with max header size "
 docker run -d --rm -e MAX_HEADER_SIZE=1000 --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
 wait_for_ready
 
-message " Make request with a header within limit."
-LARGE_HEADER_VALUE=$(head -c 600 </dev/urandom | base64 | tr -d '\n')
-REQUEST=$(curl -s -k -H "Large-Header: $LARGE_HEADER_VALUE" https://localhost:8443/)
+message " Make request with a reasonable header size."
+REASONABLE_HEADER_VALUE=$(head -c 600 </dev/urandom | base64 | tr -d '\n')
+REQUEST=$(curl -s -k -H "Large-Header: $REASONABLE_HEADER_VALUE" https://localhost:8443/)
 
-if [[ "$(echo "$REQUEST" | jq -r '.headers."large-header"')" == "$LARGE_HEADER_VALUE" ]]; then
-    passed "Large header test passed."
+if [[ "$(echo "$REQUEST" | jq -r '.headers."large-header"')" == "$REASONABLE_HEADER_VALUE" ]]; then
+    passed "Reasonable header test passed."
 else
-    failed "Large header test failed."
+    failed "Reasonable header test failed."
     echo "$REQUEST" | jq
     exit 1
 fi
