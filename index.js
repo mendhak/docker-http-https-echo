@@ -236,7 +236,7 @@ var httpServer = httpolyglot.createServer({
 let tlsOpts = {
   key: require('fs').readFileSync(process.env.HTTPS_KEY_FILE || 'testpk.pem'),
   cert: require('fs').readFileSync(process.env.HTTPS_CERT_FILE || 'fullchain.pem'),
-  ALPNProtocols: [ 'http/1.1', 'h2'],
+  ALPNProtocols: [ 'h2', 'http/1.1'],
 };
 
 //Whether to enable the client certificate feature
