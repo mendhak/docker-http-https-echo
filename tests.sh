@@ -176,6 +176,42 @@ else
     exit 1
 fi
 
+message " Check protocol negotiation: h1, h2 (TLS) and h2c (cleartext) "
+
+HTTP_VERSION_H1=$(curl -sk --http1.1 https://localhost:8443/ | jq -r '.httpVersion')
+if [[ "$HTTP_VERSION_H1" == "1.1" ]]; then
+    passed "HTTP/1.1 over TLS, got back 1.1."
+else
+    failed "HTTP/1.1 over TLS, got back $HTTP_VERSION_H1."
+    exit 1
+fi
+
+HTTP_VERSION_H2=$(curl -sk --http2 https://localhost:8443/ | jq -r '.httpVersion')
+if [[ "$HTTP_VERSION_H2" == "2.0" ]]; then
+    passed "HTTP/2 over TLS, got back 2.0."
+else
+    failed "HTTP/2 over TLS, got back $HTTP_VERSION_H2."
+    exit 1
+fi
+
+# Default negotiation (no --http1.1/--http2 flag): server ALPN prefers h2
+HTTP_VERSION_DEFAULT=$(curl -sk https://localhost:8443/ | jq -r '.httpVersion')
+if [[ "$HTTP_VERSION_DEFAULT" == "2.0" ]]; then
+    passed "Default TLS negotiation, got back 2.0."
+else
+    failed "Default TLS negotiation, got back $HTTP_VERSION_DEFAULT"
+    exit 1
+fi
+
+HTTP_VERSION_H2C=$(curl -s --http2-prior-knowledge http://localhost:8080/ | jq -r '.httpVersion')
+if [[ "$HTTP_VERSION_H2C" == "2.0" ]]; then
+    passed "Cleartext h2c (prior knowledge), got back 2.0."
+else
+    failed "Cleartext h2c (prior knowledge), got back $HTTP_VERSION_H2C."
+    exit 1
+fi
+
+
 message " Make JSON request, and test that json is in the output. "
 REQUEST=$(curl -s -X POST -H "Content-Type: application/json" -d '{"a":"b"}' http://localhost:8080/)
 if [[ "$(echo "$REQUEST" | jq -r '.json.a')" == 'b' ]]; then
@@ -227,13 +263,11 @@ fi
 
 message " Make request with a header exceeding limit."
 LARGE_HEADER_VALUE=$(head -c 5000 </dev/urandom | base64 | tr -d '\n')
-# Do with curl -v and look for "HTTP/1.1 431 Request Header Fields Too Large" output
-REQUEST=$(curl -v -k -H "Large-Header: $LARGE_HEADER_VALUE" https://localhost:8443/ 2>&1 || true)
-if echo "$REQUEST" | grep -q "HTTP/1.1 431 Request Header Fields Too Large"; then
+STATUS_CODE=$(curl -sk -o /dev/null -w "%{http_code}" -H "Large-Header: $LARGE_HEADER_VALUE" https://localhost:8443/)
+if [[ "$STATUS_CODE" == "431" ]]; then
     passed "Large header test resulted in HTTP 431."
 else
-    failed "Large header test failed."
-    echo "$REQUEST"
+    failed "Large header test failed, got status $STATUS_CODE."
     exit 1
 fi
 
