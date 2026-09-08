@@ -232,7 +232,7 @@ app.all('/{*splat}', (req, res) => {
 // plain text http server, http2 server (aka "h2c")
 var httpServer = httpolyglot.createServer({
   http: { maxHeaderSize: maxHeaderSize }, 
-  http2: {}  // HTTP/2 in Node doesn't support max header size
+  http2: {}  // Enable HTTP/2 in polyglot library, but note, it doesn't support max header size. 
 }, app).listen(process.env.HTTP_PORT || 8080);
 
 let tlsOpts = {
@@ -254,7 +254,7 @@ if(process.env.MTLS_ENABLE){
 var httpsServer = httpolyglot.createServer({
   tls: tlsOpts,
   http: { maxHeaderSize: maxHeaderSize },
-  http2: {} // HTTP/2 in Node doesn't support max header size
+  http2: {} // Enable HTTP/2 in polyglot library, but note, it doesn't support max header size. 
 }, app).listen(process.env.HTTPS_PORT || 8443);
 
 console.log(`Listening on ports ${process.env.HTTP_PORT || 8080} for http, and ${process.env.HTTPS_PORT || 8443} for https.`);
