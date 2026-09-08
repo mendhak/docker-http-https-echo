@@ -1,7 +1,7 @@
 const os = require('os');
 const jwt = require('jsonwebtoken');
-const http = require('http')
-const https = require('https')
+const http2express = require('http2-express');
+const httpolyglot = require('@httptoolkit/httpolyglot');
 const morgan = require('morgan');
 const express = require('express')
 const cookieParser = require('cookie-parser');
@@ -39,7 +39,7 @@ const metricsMiddleware = promBundle({
   metricType: PROMETHEUS_METRIC_TYPE,
 });
 
-const app = express()
+const app = http2express(express);
 app.set('json spaces', 2);
 app.set('trust proxy', trustProxy);
 
@@ -52,6 +52,28 @@ app.use(cookieParser(process.env.COOKIE_SECRET || 'examplekey'));
 if(process.env.DISABLE_REQUEST_LOGS !== 'true'){
   app.use(morgan('combined'));
 }
+
+// Enforce MAX_HEADER_SIZE at the application level, 
+// because it's not configurable for HTTP2 in Node :(
+// https://github.com/nodejs/node/issues/35218
+app.use(function(req, res, next){
+  let totalHeaderSize = 0;
+  for (const [name, value] of Object.entries(req.headers)) {
+    totalHeaderSize += Buffer.byteLength(name);
+    if (Array.isArray(value)) {
+      for (const v of value) {
+        totalHeaderSize += Buffer.byteLength(v);
+      }
+    } else {
+      totalHeaderSize += Buffer.byteLength(value);
+    }
+  }
+  if (totalHeaderSize > maxHeaderSize) {
+    res.status(431).end();
+    return;
+  }
+  next();
+});
 
 app.use(function(req, res, next){
   req.pipe(concat(function(data){
@@ -78,6 +100,7 @@ app.all('/{*splat}', (req, res) => {
     path: req.path,
     headers: req.headers,
     method: req.method,
+    url: req.url,
     body: req.body,
     cookies: req.cookies,
     fresh: req.fresh,
@@ -85,6 +108,7 @@ app.all('/{*splat}', (req, res) => {
     ip: req.ip,
     ips: req.ips,
     protocol: req.protocol,
+    httpVersion: req.httpVersion,
     query: req.query,
     signedCookies: req.signedCookies,
     subdomains: req.subdomains,
@@ -93,7 +117,7 @@ app.all('/{*splat}', (req, res) => {
       hostname: os.hostname()
     },
     connection: {
-      servername: req.connection.servername
+      servername: req.socket.servername
     }
   };
 
@@ -204,27 +228,35 @@ app.all('/{*splat}', (req, res) => {
 
 });
 
-let httpOpts = {
-  maxHeaderSize: maxHeaderSize
-}
 
-let httpsOpts = {
+// plain text http server, http2 server (aka "h2c")
+var httpServer = httpolyglot.createServer({
+  http: { maxHeaderSize: maxHeaderSize }, 
+  http2: {}  // Enable HTTP/2 in polyglot library, but note, it doesn't support max header size. 
+}, app).listen(process.env.HTTP_PORT || 8080);
+
+let tlsOpts = {
   key: require('fs').readFileSync(process.env.HTTPS_KEY_FILE || 'testpk.pem'),
   cert: require('fs').readFileSync(process.env.HTTPS_CERT_FILE || 'fullchain.pem'),
-  maxHeaderSize: maxHeaderSize
+  ALPNProtocols: [ 'h2', 'http/1.1'],
 };
 
 //Whether to enable the client certificate feature
 if(process.env.MTLS_ENABLE){
-    httpsOpts = {
+    tlsOpts = {
       requestCert: true,
       rejectUnauthorized: false,
-      ...httpsOpts
+      ...tlsOpts
     }
 }
 
-var httpServer = http.createServer(httpOpts, app).listen(process.env.HTTP_PORT || 8080);
-var httpsServer = https.createServer(httpsOpts,app).listen(process.env.HTTPS_PORT || 8443);
+// https server, http2 server (aka "h2")
+var httpsServer = httpolyglot.createServer({
+  tls: tlsOpts,
+  http: { maxHeaderSize: maxHeaderSize },
+  http2: {} // Enable HTTP/2 in polyglot library, but note, it doesn't support max header size. 
+}, app).listen(process.env.HTTPS_PORT || 8443);
+
 console.log(`Listening on ports ${process.env.HTTP_PORT || 8080} for http, and ${process.env.HTTPS_PORT || 8443} for https.`);
 
 let calledClose = false;
@@ -232,8 +264,11 @@ let calledClose = false;
 process.on('exit', function () {
   if (calledClose) return;
   console.log('Got exit event. Trying to stop Express server.');
-  server.close(function() {
-    console.log("Express server closed");
+  httpServer.close(function() {
+    console.log("HTTP server closed");
+  });
+  httpsServer.close(function() {
+    console.log("HTTPS server closed");
   });
 });
 
