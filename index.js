@@ -117,7 +117,7 @@ app.all('/{*splat}', (req, res) => {
       hostname: os.hostname()
     },
     connection: {
-      servername: req.connection.servername
+      servername: req.socket.servername
     }
   };
 
