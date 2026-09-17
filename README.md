@@ -328,6 +328,8 @@ By default, the headers in the response body are lowercased. To attempt to prese
 docker run -e PRESERVE_HEADER_CASE=true -p 8080:8080 -p 8443:8443 --rm -t mendhak/http-https-echo:41
 ```
 
+> **Note:** This only has an effect over HTTP/1.1. HTTP/2 requires all header names be lowercase. 
+
 ## Override the response body with a file
 
 To override the response body with a file, set the environment variable `OVERRIDE_RESPONSE_BODY_FILE_PATH` to a file path.  

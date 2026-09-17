@@ -706,7 +706,7 @@ message " Start container with PRESERVE_HEADER_CASE enabled "
 docker run -d -e PRESERVE_HEADER_CASE=true --rm --name http-echo-tests -p 8080:8080 -p 8443:8443 -t mendhak/http-https-echo:testing
 wait_for_ready
 
-HEADER_CASE_CHECK=$(curl -s -H "prEseRVe-CaSE: A1b2C3" -H 'x-a-b: 999'  -H 'X-a-B: 13'  localhost:8080 | jq -r '.headers."prEseRVe-CaSE"')
+HEADER_CASE_CHECK=$(curl -s --http1.1 -H "prEseRVe-CaSE: A1b2C3" -H 'x-a-b: 999'  -H 'X-a-B: 13'  localhost:8080 | jq -r '.headers."prEseRVe-CaSE"')
 if [[ "$HEADER_CASE_CHECK" == "A1b2C3" ]]
 then
     passed "PRESERVE_HEADER_CASE enabled"
