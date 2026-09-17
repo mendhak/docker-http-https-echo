@@ -18,6 +18,7 @@ This image is executed as non root by default and is fully compliant with Kubern
 
 - [Basic Usage](#basic-usage)
 - [Choose your ports](#choose-your-ports)
+- [HTTP/2 support (h2 and h2c)](#http2-support-h2-and-h2c)
 - [Use your own certificates](#use-your-own-certificates)
 - [Trust additional proxy IPs](#trust-additional-proxy-ips)
 - [Decode JWT header](#decode-jwt-header)
@@ -116,6 +117,39 @@ Now make your request with `Authentication: eyJ...` header (it should also work 
      curl -k -H "Authentication: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c" http://localhost:8080/
 
 And in the output you should see a `jwt` section.
+
+
+## HTTP/1 and HTTP/2 
+
+The server can serve HTTP/2 in addition to HTTP/1.1. The default is HTTP/2 over TLS and HTTP/1.1 over cleartext.   
+The negotiated version is returned in the `"httpVersion"` field of the response. 
+
+HTTP/2 over TLS:
+
+```bash
+$ curl -sk  https://localhost:8443/  | jq '.httpVersion'
+"2.0"
+
+$ curl -sk --http1.1  https://localhost:8443/  | jq '.httpVersion'
+"1.1"
+
+$ curl -sk --http2  https://localhost:8443/  | jq '.httpVersion'
+"2.0"
+```
+
+HTTP/2 over cleartext (h2c) only works with the prior knowledge flag. 
+
+```bash
+$ curl -sk  http://localhost:8080/  | jq '.httpVersion'
+"1.1"
+
+$ curl -sk --http1.1  http://localhost:8080/  | jq '.httpVersion'
+"1.1"
+
+$ curl -sk --http2-prior-knowledge  http://localhost:8080/  | jq '.httpVersion'
+"2.0"
+```
+
 
 ## Disable ExpressJS log lines
 
