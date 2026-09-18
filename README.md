@@ -18,10 +18,10 @@ This image is executed as non root by default and is fully compliant with Kubern
 
 - [Basic Usage](#basic-usage)
 - [Choose your ports](#choose-your-ports)
-- [HTTP/2 support (h2 and h2c)](#http2-support-h2-and-h2c)
 - [Use your own certificates](#use-your-own-certificates)
 - [Trust additional proxy IPs](#trust-additional-proxy-ips)
 - [Decode JWT header](#decode-jwt-header)
+- [HTTP/2 support (h2 and h2c)](#http1-and-http2)
 - [Disable ExpressJS log lines](#disable-expressjs-log-lines)
 - [Do not log specific path](#do-not-log-specific-path)
 - [JSON payloads and JSON output](#json-payloads-and-json-output)
