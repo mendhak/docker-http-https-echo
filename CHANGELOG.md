@@ -1,3 +1,7 @@
+## Version `42` - 2026-09-18
+* HTTP2 support added
+* The max header size is now implemented in code, due to Node's HTTP2 limitations. 
+
 ## Version `41` - 2026-06-14
 * Added support for additional trusted proxies via `ADDITIONAL_TRUSTED_PROXIES` by [JackMyers001](https://github.com/mendhak/docker-http-https-echo/pull/101)
 * Express update includes the new way of catching all paths
