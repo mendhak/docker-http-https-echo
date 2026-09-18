@@ -1,7 +1,7 @@
 version: '3'
 services:
     my-http-listener:
-        image: mendhak/http-https-echo:41
+        image: mendhak/http-https-echo:42
         environment:
             - HTTP_PORT=8888
             - HTTPS_PORT=9999
