@@ -1,3 +1,7 @@
+## Version `43` - 2026-10-24
+* Rebuild to address [Node October security releases](https://nodejs.org/en/blog/vulnerability/october-2026-security-releases)
+* Used this opportunity to update to Node 26
+
 ## Version `42` - 2026-09-18
 * HTTP2 support added
 * The max header size is now implemented in code, due to Node's HTTP2 limitations. 
