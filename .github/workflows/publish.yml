@@ -50,7 +50,7 @@ jobs:
             ghcr.io/mendhak/http-https-echo
 
       - name: Build and push image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: .
           platforms: linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8
