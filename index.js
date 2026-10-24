@@ -176,7 +176,7 @@ app.all('/{*splat}', (req, res) => {
   }
 
   //Delay the response for a user defined time
-  const sleepTime = parseInt(req.headers["x-set-response-delay-ms"] || req.query["x-set-response-delay-ms"], 0)
+  const sleepTime = parseInt(req.headers["x-set-response-delay-ms"] || req.query["x-set-response-delay-ms"]) || 0;
   sleep(sleepTime).then(() => {
 
     //Set the response content type to what the user wants
